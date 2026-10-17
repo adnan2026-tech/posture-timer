@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1214">
+<title>Motion Study</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+/* Layout: app home — title block, then one large card per tool, stacked; a small note at the bottom. Single dark theme matching both tools. */
+:root{--bg:#0d1214;--panel:#161e21;--panel-2:#1d272a;--ink:#e7eeec;--muted:#93a3a3;--line:#2a3639;--accent:#4db2ab;--warm:#e3a332;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;--f-body:"IBM Plex Sans",system-ui,sans-serif;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.wrap{max-width:640px;margin:0 auto;padding-inline:16px;padding-block:28px 32px;display:flex;flex-direction:column;gap:14px}
+h1{font-family:var(--f-display);font-weight:700;font-size:40px;line-height:1;text-transform:uppercase;letter-spacing:.02em;margin:0}
+.sub{color:var(--muted);margin:4px 0 8px}
+a.card{display:grid;grid-template-columns:64px 1fr;gap:4px 14px;align-items:center;padding:18px 16px;border-radius:14px;background:var(--panel);border:1px solid var(--line);color:inherit;text-decoration:none}
+a.card:active{transform:scale(.99);border-color:var(--accent)}
+a.card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.ico{grid-row:1/3;width:64px;height:64px;border-radius:14px;background:var(--panel-2);display:flex;align-items:center;justify-content:center}
+.ico svg{width:40px;height:40px;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.card h2{font-family:var(--f-display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.03em;margin:0;line-height:1}
+.card p{margin:0;color:var(--muted);font-size:13.5px}
+.note{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.note b{color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div><h1>Motion Study</h1><p class="sub">Work-study tools that run on this phone. No internet needed.</p></div>
+  <a class="card" href="motion.html">
+    <span class="ico"><svg viewBox="0 0 40 40" stroke="#4db2ab"><circle cx="13" cy="7" r="3"/><path d="M13 11v11l-4 10M13 22l4 10M13 14l-6 5M13 14l7-2"/><circle cx="29" cy="7" r="3" stroke="#93a3a3" stroke-dasharray="2 2"/><path d="M29 11v11l-4 10M29 22l4 10M29 14l-6 5M29 14l7 4" stroke="#93a3a3" stroke-dasharray="2 2"/></svg></span>
+    <h2>Motion Standard</h2>
+    <p>Record an expert once, then check employees step by step: missed steps, slow steps, method differences.</p>
+  </a>
+  <a class="card" href="posture.html">
+    <span class="ico"><svg viewBox="0 0 40 40" stroke="#e3a332"><circle cx="20" cy="22" r="13"/><path d="M20 14v8l5 4M16 4h8M20 4v5"/></svg></span>
+    <h2>Posture Timer</h2>
+    <p>Live time in sitting, standing, walking and hands-active states, with a timeline and CSV.</p>
+  </a>
+  <p class="note"><b>Privacy:</b> camera video is processed on this phone and never saved or sent. Only body-point positions and times are stored.</p>
+  <p class="note" id="ver"></p>
+</div>
+<script>
+try{const P=window.Capacitor&&window.Capacitor.Plugins;if(P&&P.App&&P.App.getInfo)P.App.getInfo().then(i=>{document.getElementById("ver").textContent="Version "+i.version})}catch(e){}
+</script>
+</body>
+</html>

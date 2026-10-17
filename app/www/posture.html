@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1214">
+<title>Posture Timer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="fonts/fonts.css" onerror="this.remove()">
+<style>
+/* Layout: camera-app screen — live video with skeleton on top, state readout, controls, timers below. Single dark theme by design. */
+:root{
+  --bg:#0d1214; --panel:#161e21; --panel-2:#1d272a; --ink:#e7eeec; --muted:#93a3a3; --line:#2a3639;
+  --accent:#4db2ab; --accent-ink:#071211; --bad:#ff8a80;
+  --s-sit:#6aa2df; --s-stand:#3dbd83; --s-walk:#9f8ae4; --s-crawl:#e3a332; --s-lie:#e17461; --s-none:#6f7b7d;
+  --h-act:#3dbd83; --h-still:#6f7b7d;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.wrap{max-width:720px;margin:0 auto;padding-inline:14px;padding-block:12px 28px;display:flex;flex-direction:column;gap:12px}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:700;font-size:28px;text-transform:uppercase;letter-spacing:.02em;margin:0;line-height:1}
+.note{font-size:12px;color:var(--muted)}
+.privacy{font-size:12px;color:var(--accent);font-weight:600}
+.stage{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:3/4;max-height:62vh;margin:0 auto}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.stage.mirror video,.stage.mirror canvas{transform:scaleX(-1)}
+.stage canvas{touch-action:none}
+.overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:20px;background:rgba(13,18,20,.88)}
+.overlay p{margin:0;max-width:34ch;color:var(--muted)}
+.live{position:absolute;left:10px;top:10px;right:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none}
+.pill{font-family:var(--f-display);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.03em;padding:4px 12px;border-radius:999px;background:rgba(0,0,0,.6);display:flex;align-items:center;gap:8px}
+.pill::before{content:"";width:12px;height:12px;border-radius:50%;background:var(--c)}
+.fps{font-family:var(--f-mono);font-size:11px;background:rgba(0,0,0,.6);padding:4px 8px;border-radius:6px;align-self:flex-start}
+.zone-hint{position:absolute;bottom:10px;left:10px;right:10px;text-align:center;font-size:13px;background:rgba(0,0,0,.7);padding:6px;border-radius:6px}
+.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.btn{min-height:48px;border-radius:10px;border:1px solid var(--line);background:var(--panel);color:var(--ink);font:inherit;font-weight:600;font-size:14px;cursor:pointer;padding:6px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.on{border-color:var(--accent);color:var(--accent)}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.4}
+.btn.big{min-height:56px;font-family:var(--f-display);font-size:20px;text-transform:uppercase;letter-spacing:.05em}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+h2{font-family:var(--f-display);font-weight:600;font-size:18px;text-transform:uppercase;letter-spacing:.04em;margin:0}
+.total{font-family:var(--f-mono);font-size:13px;color:var(--muted)}
+.trow{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px 12px;align-items:center}
+.trow .name{display:flex;align-items:center;gap:8px;font-weight:500}
+.trow .name::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--c)}
+.trow.cur .name{font-weight:700}
+.trow .t{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.trow .p{font-family:var(--f-mono);font-variant-numeric:tabular-nums;color:var(--muted);min-width:4ch;text-align:right}
+.trow .track{grid-column:1/-1;height:6px;border-radius:3px;background:var(--panel-2);overflow:hidden}
+.trow .track i{display:block;height:100%;background:var(--c)}
+.timeline{display:flex;height:22px;border-radius:5px;overflow:hidden;background:var(--panel-2)}
+.timeline span{height:100%}
+.log{font-family:var(--f-mono);font-size:12px;color:var(--muted);max-height:180px;overflow:auto;display:flex;flex-direction:column;gap:2px}
+.log div{display:flex;gap:10px}
+.log b{color:var(--ink);font-weight:500}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;min-height:42px;border:0;background:var(--panel);color:var(--ink);font:inherit;font-weight:600;font-size:13px;cursor:pointer}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.lbl{font-size:12px;font-weight:600;color:var(--muted)}
+.err{color:var(--bad)}
+@media (max-width:380px){.controls{grid-template-columns:repeat(2,1fr)}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div><h1>Posture Timer</h1><div class="note">Live pose tracking · trial version</div></div>
+    <div class="privacy">Video stays on this phone. Nothing is uploaded or recorded.</div>
+  </header>
+
+  <div class="stage" id="stage">
+    <video id="video" playsinline muted></video>
+    <canvas id="canvas"></canvas>
+    <div class="live" id="live" hidden>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <span class="pill" id="pPosture" style="--c:var(--s-none)">—</span>
+        <span class="pill" id="pHands" style="--c:var(--h-still)">—</span>
+      </div>
+      <span class="fps" id="fps"></span>
+    </div>
+    <div class="zone-hint" id="zoneHint" hidden>Drag a box over the play area (toy mat, work table). Hands inside it count as active.</div>
+    <div class="overlay" id="overlay">
+      <h2>Point the phone at the area</h2>
+      <p>Place the phone on a stand 2–4 m away so the whole body is in view. Tap Start and allow camera access.</p>
+      <button class="btn primary big" id="startBtn" style="min-width:200px">Start</button>
+      <p class="note" id="loadMsg"></p>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="pauseBtn" disabled>Pause</button>
+    <button class="btn" id="flipBtn" disabled>Flip camera</button>
+    <button class="btn" id="zoneBtn" disabled>Set zone</button>
+    <button class="btn" id="resetBtn">Reset</button>
+  </div>
+
+  <section class="panel">
+    <div class="ph"><h2>Posture</h2><span class="total" id="totPosture">00:00:00</span></div>
+    <div id="postureRows"></div>
+    <div class="timeline" id="timeline" aria-label="Posture timeline"></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><h2>Hands</h2><span class="note">"Active" = working, in the factory version</span></div>
+    <div id="handRows"></div>
+  </section>
+
+  <section class="panel">
+    <div class="ph"><h2>Changes</h2><button class="btn" id="csvBtn" style="min-height:38px;padding:4px 12px">Download CSV</button></div>
+    <div class="log" id="log"><div>No changes yet.</div></div>
+  </section>
+
+  <section class="panel">
+    <h2>Settings</h2>
+    <span class="lbl">Movement sensitivity</span>
+    <div class="seg" id="sens">
+      <button data-v="0.7">Low</button><button data-v="1" class="on">Normal</button><button data-v="1.5">High</button>
+    </div>
+    <span class="lbl">State must hold before switching</span>
+    <div class="seg" id="hold">
+      <button data-v="400">0.4 s</button><button data-v="800" class="on">0.8 s</button><button data-v="1500">1.5 s</button>
+    </div>
+    <p class="note">The body model is trained mostly on adults. Small children are detected, but sitting vs standing is less reliable when legs are hidden by toys or furniture.</p>
+  </section>
+</div>
+
+<script type="module">
+const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const NP=NATIVE?(window.Capacitor.Plugins||{}):{};
+const MPBASE=NATIVE?new URL("mediapipe",location.href).href:"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+const MPMODEL=NATIVE?MPBASE+"/pose_landmarker_lite.task":"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+const { PoseLandmarker, FilesetResolver } = await import(MPBASE+"/vision_bundle.mjs");
+
+const POSTURES = {
+  sit:   {l:"Sitting",     c:"var(--s-sit)"},
+  stand: {l:"Standing",    c:"var(--s-stand)"},
+  walk:  {l:"Walking",     c:"var(--s-walk)"},
+  crawl: {l:"Crawling",    c:"var(--s-crawl)"},
+  lie:   {l:"Lying down",  c:"var(--s-lie)"},
+  none:  {l:"Not in view", c:"var(--s-none)"}
+};
+const HANDS = { act:{l:"Hands active", c:"var(--h-act)"}, still:{l:"Hands still", c:"var(--h-still)"} };
+const EDGES = [[11,12],[11,13],[13,15],[12,14],[14,16],[11,23],[12,24],[23,24],[23,25],[25,27],[24,26],[26,28]];
+
+const $ = id => document.getElementById(id);
+const video=$("video"), canvas=$("canvas"), ctx=canvas.getContext("2d"), stage=$("stage");
+let landmarker=null, stream=null, facing="environment", running=false, paused=false;
+let sens=1, holdMs=800, lastT=0, lastVideoTime=-1, frames=0, fpsT=0;
+let zone=null, zoneMode=false, drag=null;
+const hist=[];                       // recent positions for speed
+const T = {posture:{}, hands:{}};    // accumulated ms
+Object.keys(POSTURES).forEach(k=>T.posture[k]=0); Object.keys(HANDS).forEach(k=>T.hands[k]=0);
+let cur={posture:"none",hands:"still"}, cand={posture:null,since:0,hands:null,hsince:0};
+const changes=[]; const tl=[];      // tl: [{k, ms}] posture timeline blocks
+let sessionStart=null;
+
+/* ---------- geometry ---------- */
+const mid=(a,b)=>({x:(a.x+b.x)/2,y:(a.y+b.y)/2,v:Math.min(a.v,b.v)});
+const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+function angle(a,b,c){const v1={x:a.x-b.x,y:a.y-b.y},v2={x:c.x-b.x,y:c.y-b.y};
+  const d=(v1.x*v2.x+v1.y*v2.y)/((Math.hypot(v1.x,v1.y)*Math.hypot(v2.x,v2.y))||1);return Math.acos(Math.max(-1,Math.min(1,d)))*180/Math.PI}
+
+/* ---------- classify one frame ---------- */
+function classify(lm,now){
+  const W=video.videoWidth,H=video.videoHeight;
+  const P=i=>({x:lm[i].x*W,y:lm[i].y*H,v:lm[i].visibility??1,nx:lm[i].x,ny:lm[i].y});
+  const ls=P(11),rs=P(12),lh=P(23),rh=P(24);
+  if((ls.v+rs.v+lh.v+rh.v)/4<0.45){hist.length=0;return{posture:"none",hands:"still"}}
+  const sh=mid(ls,rs),hip=mid(lh,rh),torso=Math.max(10,dist(sh,hip));
+  const dy=hip.y-sh.y,dx=Math.abs(hip.x-sh.x);
+  const tilt=Math.atan2(dx,Math.abs(dy))*180/Math.PI;
+  const lw=P(15),rw=P(16);
+  // motion history
+  hist.push({t:now,hip,lw,rw,torso});
+  while(hist.length&&now-hist[0].t>1500)hist.shift();
+  const speed=key=>{if(hist.length<3)return 0;let d=0;for(let i=1;i<hist.length;i++)d+=dist(hist[i][key],hist[i-1][key]);
+    const dt=(hist[hist.length-1].t-hist[0].t)/1000;return dt>0?d/dt/torso:0};
+  const hipSpeed=speed("hip"), handSpeed=Math.max(lw.v>.4?speed("lw"):0, rw.v>.4?speed("rw"):0)-hipSpeed*0.8;
+
+  let posture;
+  if(tilt>55||dy<0){
+    const wristsDown=[lw,rw].filter(w=>w.v>.4&&w.y>sh.y+0.25*torso).length;
+    posture=wristsDown>=1&&dy>=-0.2*torso?"crawl":"lie";
+  }else{
+    const lk=P(25),rk=P(26),la=P(27),ra=P(28);
+    const legsSeen=(lk.v+rk.v)/2>0.5;
+    if(!legsSeen)posture="sit";
+    else{
+      const hipAng=(angle(ls,lh,lk)+angle(rs,rh,rk))/2;
+      const ankSeen=(la.v+ra.v)/2>0.5;
+      const kneeAng=ankSeen?(angle(lh,lk,la)+angle(rh,rk,ra))/2:180;
+      posture=(hipAng>150&&kneeAng>145)?"stand":"sit";
+    }
+    if(posture==="stand"&&hipSpeed>0.55/sens)posture="walk";
+  }
+  // hands
+  let hands=handSpeed>0.7/sens?"act":"still";
+  if(hands==="act"&&zone){
+    const inZ=w=>w.v>.4&&w.nx>=zone.x&&w.nx<=zone.x+zone.w&&w.ny>=zone.y&&w.ny<=zone.y+zone.h;
+    if(!inZ(lw)&&!inZ(rw))hands="still";
+  }
+  return{posture,hands};
+}
+
+/* ---------- state machine with hold time ---------- */
+function update(raw,now,dt){
+  if(!paused&&sessionStart){
+    T.posture[cur.posture]+=dt;
+    if(cur.posture!=="none")T.hands[cur.hands]+=dt;
+    const last=tl[tl.length-1];if(last&&last.k===cur.posture)last.ms+=dt;else tl.push({k:cur.posture,ms:dt});
+    if(tl.length>400){tl[1].ms+=tl[0].ms;tl.shift()}
+  }
+  if(raw.posture!==cur.posture){
+    if(cand.posture!==raw.posture){cand.posture=raw.posture;cand.since=now}
+    else if(now-cand.since>=holdMs){logChange(POSTURES[cur.posture].l,POSTURES[raw.posture].l);cur.posture=raw.posture;cand.posture=null}
+  }else cand.posture=null;
+  const rh=raw.posture==="none"?"still":raw.hands;
+  if(rh!==cur.hands){
+    if(cand.hands!==rh){cand.hands=rh;cand.hsince=now}
+    else if(now-cand.hsince>=Math.max(300,holdMs*0.75)){cur.hands=rh;cand.hands=null}
+  }else cand.hands=null;
+}
+function logChange(from,to){if(paused||!sessionStart)return;changes.push({t:Date.now(),from,to});renderLog()}
+
+/* ---------- drawing ---------- */
+function draw(lm){
+  const W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);
+  if(zone||drag){const z=drag||zone;ctx.strokeStyle="#4db2ab";ctx.lineWidth=Math.max(2,W/200);ctx.setLineDash([12,8]);
+    ctx.strokeRect(z.x*W,z.y*H,z.w*W,z.h*H);ctx.setLineDash([]);ctx.fillStyle="rgba(77,178,171,.12)";ctx.fillRect(z.x*W,z.y*H,z.w*W,z.h*H)}
+  if(!lm)return;
+  const col=getComputedStyle(document.documentElement).getPropertyValue(POSTURES[cur.posture].c.slice(4,-1)).trim()||"#fff";
+  ctx.lineWidth=Math.max(3,W/120);ctx.strokeStyle=col;ctx.lineCap="round";
+  EDGES.forEach(([a,b])=>{if((lm[a].visibility??1)<.4||(lm[b].visibility??1)<.4)return;ctx.beginPath();ctx.moveTo(lm[a].x*W,lm[a].y*H);ctx.lineTo(lm[b].x*W,lm[b].y*H);ctx.stroke()});
+  ctx.fillStyle="#fff";
+  [0,11,12,13,14,15,16,23,24,25,26,27,28].forEach(i=>{if((lm[i].visibility??1)<.4)return;ctx.beginPath();ctx.arc(lm[i].x*W,lm[i].y*H,Math.max(4,W/140),0,7);ctx.fill()});
+  [15,16].forEach(i=>{if((lm[i].visibility??1)<.4)return;ctx.strokeStyle=cur.hands==="act"?"#3dbd83":"#93a3a3";ctx.lineWidth=Math.max(2,W/250);ctx.beginPath();ctx.arc(lm[i].x*W,lm[i].y*H,Math.max(10,W/50),0,7);ctx.stroke()});
+}
+
+/* ---------- main loop ---------- */
+function loop(){
+  if(!running)return;
+  const now=performance.now();const dt=lastT?Math.min(500,now-lastT):0;lastT=now;
+  let lm=null;
+  if(video.readyState>=2&&video.currentTime!==lastVideoTime){
+    lastVideoTime=video.currentTime;
+    try{const res=landmarker.detectForVideo(video,now);lm=res.landmarks&&res.landmarks[0]||null}catch(e){}
+    const raw=lm?classify(lm,now):(hist.length=0,{posture:"none",hands:"still"});
+    update(raw,now,dt);draw(lm);frames++;
+  }else update({posture:cur.posture,hands:cur.hands},now,dt);
+  if(now-fpsT>1000){$("fps").textContent=frames+" fps";frames=0;fpsT=now;renderTimers()}
+  renderLive();
+  requestAnimationFrame(loop);
+}
+
+/* ---------- rendering ---------- */
+const fmt=ms=>{const s=Math.floor(ms/1000);return String(Math.floor(s/3600)).padStart(2,"0")+":"+String(Math.floor(s%3600/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0")};
+function renderLive(){const p=$("pPosture"),h=$("pHands");
+  p.textContent=paused?"Paused":POSTURES[cur.posture].l;p.style.setProperty("--c",paused?"var(--s-none)":POSTURES[cur.posture].c);
+  h.textContent=HANDS[cur.hands].l;h.style.setProperty("--c",HANDS[cur.hands].c);h.hidden=cur.posture==="none"||paused}
+function rows(obj,defs,curKey){const tot=Object.values(obj).reduce((a,b)=>a+b,0);
+  return Object.keys(defs).map(k=>{const pc=tot?Math.round(obj[k]/tot*1000)/10:0;
+    return`<div class="trow${k===curKey?" cur":""}" style="--c:${defs[k].c}"><span class="name">${defs[k].l}</span><span class="t">${fmt(obj[k])}</span><span class="p">${pc}%</span><div class="track"><i style="width:${pc}%"></i></div></div>`}).join("")}
+function renderTimers(){
+  $("postureRows").innerHTML=rows(T.posture,POSTURES,cur.posture);
+  $("handRows").innerHTML=rows(T.hands,HANDS,cur.hands);
+  $("totPosture").textContent=fmt(Object.values(T.posture).reduce((a,b)=>a+b,0));
+  $("timeline").innerHTML=tl.map(b=>`<span style="flex:${b.ms};background:${POSTURES[b.k].c}"></span>`).join("");
+}
+function renderLog(){const el=$("log");if(!changes.length){el.innerHTML="<div>No changes yet.</div>";return}
+  el.innerHTML=changes.slice(-60).reverse().map(c=>`<div><span>${new Date(c.t).toLocaleTimeString()}</span><span>${c.from} → <b>${c.to}</b></span></div>`).join("")}
+
+/* ---------- camera ---------- */
+async function openCamera(){
+  if(stream)stream.getTracks().forEach(t=>t.stop());
+  stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1280},height:{ideal:720}},audio:false});
+  video.srcObject=stream;await video.play();
+  canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+  stage.style.aspectRatio=video.videoWidth+"/"+video.videoHeight;
+  stage.classList.toggle("mirror",facing==="user");
+}
+let wakeLock=null;
+async function keepAwake(){if(NATIVE&&NP.KeepAwake){try{await NP.KeepAwake.keepAwake()}catch(e){}return}try{if("wakeLock" in navigator)wakeLock=await navigator.wakeLock.request("screen")}catch(e){}}
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&running)keepAwake()});
+
+$("startBtn").onclick=async()=>{
+  const msg=$("loadMsg");msg.classList.remove("err");
+  if(!window.isSecureContext||!navigator.mediaDevices){msg.textContent=NATIVE?"Camera not available. Update Android System WebView from the Play Store.":"The camera only works when this page is opened from an https:// address. See the setup steps.";msg.classList.add("err");return}
+  $("startBtn").disabled=true;
+  try{
+    msg.textContent=NATIVE?"Starting body tracking…":"Loading the body-tracking model (first time needs internet, about 5 MB)…";
+    const files=await FilesetResolver.forVisionTasks(MPBASE+"/wasm");
+    const opts=d=>({baseOptions:{modelAssetPath:MPMODEL,delegate:d},runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:0.5,minPosePresenceConfidence:0.5,minTrackingConfidence:0.5});
+    try{landmarker=await PoseLandmarker.createFromOptions(files,opts("GPU"))}catch(e){landmarker=await PoseLandmarker.createFromOptions(files,opts("CPU"))}
+    msg.textContent="Opening camera…";
+    await openCamera();
+  }catch(e){
+    $("startBtn").disabled=false;
+    msg.textContent=e&&e.name==="NotAllowedError"?"Camera permission was refused. Allow camera for this site in the browser settings, then tap Start.":"Couldn't start: "+(e&&e.message||e);
+    msg.classList.add("err");return}
+  $("overlay").hidden=true;$("live").hidden=false;
+  ["pauseBtn","flipBtn","zoneBtn"].forEach(id=>$(id).disabled=false);
+  running=true;sessionStart=sessionStart||Date.now();lastT=0;keepAwake();renderTimers();requestAnimationFrame(loop);
+};
+$("pauseBtn").onclick=()=>{paused=!paused;$("pauseBtn").textContent=paused?"Resume":"Pause";$("pauseBtn").classList.toggle("on",paused)};
+$("flipBtn").onclick=async()=>{facing=facing==="environment"?"user":"environment";try{await openCamera()}catch(e){facing=facing==="environment"?"user":"environment"}};
+$("resetBtn").onclick=()=>{Object.keys(T.posture).forEach(k=>T.posture[k]=0);Object.keys(T.hands).forEach(k=>T.hands[k]=0);changes.length=0;tl.length=0;sessionStart=running?Date.now():null;renderTimers();renderLog()};
+$("zoneBtn").onclick=()=>{if(zone&&!zoneMode){zone=null;$("zoneBtn").textContent="Set zone";return}
+  zoneMode=!zoneMode;$("zoneBtn").classList.toggle("on",zoneMode);$("zoneHint").hidden=!zoneMode};
+function toNorm(e){const r=canvas.getBoundingClientRect();const vw=video.videoWidth,vh=video.videoHeight;
+  const scale=Math.min(r.width/vw,r.height/vh),dw=vw*scale,dh=vh*scale,ox=(r.width-dw)/2,oy=(r.height-dh)/2;
+  let x=(e.clientX-r.left-ox)/dw,y=(e.clientY-r.top-oy)/dh;if(facing==="user")x=1-x;return{x:Math.max(0,Math.min(1,x)),y:Math.max(0,Math.min(1,y))}}
+canvas.addEventListener("pointerdown",e=>{if(!zoneMode)return;const p=toNorm(e);drag={x0:p.x,y0:p.y,x:p.x,y:p.y,w:0,h:0};canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener("pointermove",e=>{if(!drag)return;const p=toNorm(e);drag.x=Math.min(p.x,drag.x0);drag.y=Math.min(p.y,drag.y0);drag.w=Math.abs(p.x-drag.x0);drag.h=Math.abs(p.y-drag.y0)});
+canvas.addEventListener("pointerup",()=>{if(!drag)return;if(drag.w>0.05&&drag.h>0.05){zone={x:drag.x,y:drag.y,w:drag.w,h:drag.h};$("zoneBtn").textContent="Clear zone"}
+  drag=null;zoneMode=false;$("zoneBtn").classList.remove("on");$("zoneHint").hidden=true});
+
+document.querySelectorAll(".seg").forEach(s=>s.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+  s.querySelectorAll("button").forEach(x=>x.classList.toggle("on",x===b));if(s.id==="sens")sens=+b.dataset.v;else holdMs=+b.dataset.v}));
+
+$("csvBtn").onclick=()=>{
+  const lines=[["section","item","time_hh_mm_ss","seconds","percent"]];
+  const add=(sec,obj,defs)=>{const tot=Object.values(obj).reduce((a,b)=>a+b,0);Object.keys(defs).forEach(k=>lines.push([sec,defs[k].l,fmt(obj[k]),(obj[k]/1000).toFixed(1),tot?(obj[k]/tot*100).toFixed(1):"0"]))};
+  add("posture",T.posture,POSTURES);add("hands",T.hands,HANDS);
+  lines.push([]);lines.push(["change_time","from","to"]);changes.forEach(c=>lines.push([new Date(c.t).toLocaleString(),c.from,c.to]));
+  const csv=lines.map(r=>r.map(v=>/[",]/.test(String(v))?'"'+String(v).replace(/"/g,'""')+'"':v).join(",")).join("\n");
+  const fname="posture-timer-"+new Date().toISOString().slice(0,16).replace(/[:T]/g,"-")+".csv";
+  if(NATIVE&&NP.Filesystem&&NP.Share){NP.Filesystem.writeFile({path:fname,data:csv,directory:"CACHE",encoding:"utf8"}).then(r=>NP.Share.share({title:fname,files:[r.uri]})).catch(()=>{});return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+  a.download="posture-timer-"+new Date().toISOString().slice(0,16).replace(/[:T]/g,"-")+".csv";document.body.appendChild(a);a.click();a.remove();
+};
+renderTimers();
+if(NATIVE){const h=document.createElement("a");h.href="index.html";h.textContent="‹ Apps";h.style.cssText="position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));background:var(--panel);color:var(--accent);font-weight:600;border:1px solid var(--line);border-radius:999px;padding:8px 14px;z-index:15;text-decoration:none";document.body.appendChild(h)}
+</script>
+</body>
+</html>
