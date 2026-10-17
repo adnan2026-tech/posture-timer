@@ -2,7 +2,10 @@
 # Copies everything the app needs into www/ so it works with no internet.
 set -euo pipefail
 cd "$(dirname "$0")"
-mkdir -p www/mediapipe/wasm www/fonts
+mkdir -p www/mediapipe/wasm www/fonts www/lib
+# Motion Standard is the whole app now: drop the old launcher pages if they are still in the repository
+rm -f www/motion.html www/posture.html
+cp node_modules/jspdf/dist/jspdf.umd.min.js node_modules/html2canvas/dist/html2canvas.min.js node_modules/exceljs/dist/exceljs.min.js www/lib/
 cp node_modules/@mediapipe/tasks-vision/vision_bundle.mjs www/mediapipe/
 cp node_modules/@mediapipe/tasks-vision/wasm/* www/mediapipe/wasm/
 for f in barlow-condensed/files/barlow-condensed-latin-600-normal barlow-condensed/files/barlow-condensed-latin-700-normal \
