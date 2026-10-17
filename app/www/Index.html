@@ -1,0 +1,1021 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0d1214">
+<title>Motion Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="fonts/fonts.css" onerror="this.remove()">
+<style>
+/* Layout: phone-first single column (max 760px). Camera screens put the video stage first; analysis screens lead with a summary, then the ranked improvement list, then replay and detail. Single dark theme by design (shop-floor camera tool). */
+:root{
+  --bg:#0d1214; --panel:#161e21; --panel-2:#1d272a; --ink:#e7eeec; --muted:#93a3a3; --line:#2a3639;
+  --accent:#4db2ab; --accent-ink:#071211;
+  --ok:#3dbd83; --slow:#e3a332; --method:#d27fd9; --miss:#ff7b6b; --fast:#6aa2df; --ghost:#f2f5f4;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.wrap>*,.panel>*{min-width:0;max-width:100%}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
+body{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.wrap{max-width:760px;margin:0 auto;padding-inline:14px;padding-block:12px 40px;display:flex;flex-direction:column;gap:12px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.brand{text-align:left;font-family:var(--f-display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.02em;line-height:1;cursor:pointer;background:none;border:0;padding:0}
+.brand small{display:block;font-family:var(--f-body);font-weight:500;font-size:11px;letter-spacing:.08em;color:var(--muted);margin-top:3px}
+.privacy{font-size:12px;color:var(--accent);font-weight:600;max-width:30ch;text-align:right}
+h1{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1.05;text-transform:uppercase;margin:0;text-wrap:balance}
+h2{font-family:var(--f-display);font-weight:600;font-size:19px;text-transform:uppercase;letter-spacing:.04em;margin:0}
+h3{font-size:15px;font-weight:600;margin:0}
+.lead{color:var(--muted);margin:2px 0 0;max-width:62ch}
+.note{font-size:12.5px;color:var(--muted);margin:0}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row.between{justify-content:space-between}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.lbl{font-size:12px;font-weight:600;color:var(--muted)}
+input[type=text],input[type=number],select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)}
+.btn{min-height:46px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.big{min-height:58px;font-family:var(--f-display);font-size:21px;text-transform:uppercase;letter-spacing:.05em;flex:1}
+.btn.stop{background:var(--miss);border-color:var(--miss);color:#1b0805}
+.btn.sm{min-height:38px;padding:4px 12px;font-size:13px}
+.btn.danger{color:var(--miss)}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.link{background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:6px 0;min-height:36px;text-align:left}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;min-height:42px;border:0;background:var(--panel-2);font-weight:600;font-size:13px;cursor:pointer;padding:4px 8px}
+.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.step{background:var(--panel-2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:4px}
+.step b{font-family:var(--f-display);font-size:28px;color:var(--accent);line-height:1}
+.list{display:flex;flex-direction:column}
+.item{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 2px;border:0;border-bottom:1px solid var(--line);background:none;width:100%;text-align:left;cursor:pointer;flex-wrap:wrap}
+.item:last-child{border-bottom:0}
+.item .meta{color:var(--muted);font-size:13px}
+.item-main{min-width:0;flex:1}
+.chip{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.factory{color:var(--accent);border-color:var(--accent)}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;white-space:nowrap}
+.st::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--c)}
+.stage{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;max-height:60vh;margin:0 auto}
+.stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.stage.mirror video,.stage.mirror canvas{transform:scaleX(-1)}
+.hud{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;flex-wrap:wrap}
+.pill{font-family:var(--f-display);font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.03em;padding:4px 12px;border-radius:999px;background:rgba(0,0,0,.65)}
+.pill.rec{color:#fff;background:rgba(200,40,30,.85)}
+.count{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700;font-size:120px;color:#fff;text-shadow:0 4px 20px rgba(0,0,0,.6);pointer-events:none}
+.msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:8px;background:rgba(13,18,20,.85)}
+.bar{height:8px;border-radius:4px;background:var(--panel-2);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent)}
+.bar i.over{background:var(--slow)}
+.player canvas{width:100%;aspect-ratio:4/3;background:#06090a;border-radius:10px;display:block}
+.pctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pctl input[type=range]{flex:1 1 120px;min-width:0;accent-color:var(--accent);min-height:36px}
+.pctl .time{font-family:var(--f-mono);font-size:12px;color:var(--muted);min-width:11ch;text-align:right}
+.tl{position:relative;height:42px;border-radius:8px;background:var(--panel-2);overflow:hidden;cursor:pointer;touch-action:manipulation}
+.tl .blk{position:absolute;top:0;bottom:0;border-right:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:11px;color:#071211;font-weight:500;overflow:hidden}
+.tl .out{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(0,0,0,.55),rgba(0,0,0,.55) 4px,rgba(0,0,0,.35) 4px,rgba(0,0,0,.35) 8px)}
+.tl .ph{position:absolute;top:-2px;bottom:-2px;width:2px;background:#fff;box-shadow:0 0 0 1px #000;pointer-events:none}
+.tl .mk{position:absolute;top:0;width:2px;height:10px;background:var(--slow)}
+.tl-lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);font-weight:600}
+td.r,th.r{text-align:right}
+td.num,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+tr.sel td{background:var(--panel-2)}
+tr.click{cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.stat{background:var(--panel-2);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.stat b{font-family:var(--f-display);font-size:30px;font-weight:700;line-height:1}
+.stat span{font-size:12px;color:var(--muted)}
+.imp{display:flex;flex-direction:column;gap:8px}
+.imp-item{display:grid;grid-template-columns:4px 1fr auto;gap:4px 12px;padding:10px 12px 10px 0;background:var(--panel-2);border-radius:10px;cursor:pointer;border:0;text-align:left;width:100%}
+.imp-item .sev{grid-row:1/3;background:var(--c);border-radius:10px 0 0 10px}
+.imp-item .t{font-weight:600}
+.imp-item .lost{font-family:var(--f-mono);font-size:13px;color:var(--c);text-align:right}
+.imp-item .d{grid-column:2/4;font-size:13px;color:var(--muted)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:16px;height:3px;background:var(--c);display:inline-block}
+.legend i.dash{background:repeating-linear-gradient(90deg,var(--c),var(--c) 4px,transparent 4px,transparent 7px)}
+.cur-el{font-family:var(--f-display);font-weight:600;font-size:20px;text-transform:uppercase}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
+.busy{position:fixed;inset:0;background:rgba(13,18,20,.85);display:flex;align-items:center;justify-content:center;z-index:30;font-family:var(--f-display);font-size:24px;text-transform:uppercase;letter-spacing:.05em}
+.check{display:flex;gap:10px;align-items:center;min-height:40px}
+.check input{width:20px;height:20px;accent-color:var(--accent)}
+textarea{width:100%;min-height:64px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);resize:vertical;line-height:1.4}
+.kchip{min-height:38px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);font-weight:600;font-size:13px;cursor:pointer}
+.kchip.on{background:var(--c);border-color:var(--c);color:#0b1011}
+.jstep{gap:8px}
+.jstep .ph{max-width:220px;border-radius:8px;display:block}
+.savestate{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
+.userbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.uchip{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:13px;cursor:pointer}
+.uchip i{font-style:normal;color:var(--muted);font-weight:500}
+.menu{position:fixed;inset:0;z-index:40;background:rgba(5,8,9,.6);display:flex;align-items:flex-start;justify-content:flex-end;padding:calc(56px + env(safe-area-inset-top,0px)) 14px 14px}
+.menu .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-width:230px;padding:6px;display:flex;flex-direction:column}
+.menu .box button{background:none;border:0;text-align:left;padding:12px 14px;min-height:46px;border-radius:8px;font-weight:600;cursor:pointer}
+.menu .box button:hover,.menu .box button:focus-visible{background:var(--panel-2)}
+.menu .box .who{padding:10px 14px;border-bottom:1px solid var(--line);margin-bottom:4px;font-size:13px;color:var(--muted)}
+.modal{position:fixed;inset:0;z-index:45;background:rgba(5,8,9,.7);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;max-width:360px;width:100%;display:flex;flex-direction:column;gap:12px}
+.login{max-width:420px;margin:6vh auto 0;width:100%}
+.role{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.role.admin{color:var(--accent);border-color:var(--accent)}
+ul.tips{margin:0;padding-left:18px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <button class="brand" data-act="home">Motion Study<small>Motion standards · job breakdown · employee checks</small></button>
+    <div class="userbar" id="userbar"><div class="privacy">Video stays on this phone. Only body-point coordinates are saved.</div></div>
+  </div>
+  <main id="app" class="wrap" style="padding:0;width:100%"></main>
+</div>
+<div class="toast" id="toast" hidden></div>
+<div class="busy" id="busy" hidden>Analyzing…</div>
+<div class="menu" id="menu" hidden></div>
+<div class="modal" id="modal" hidden></div>
+
+<script type="module">
+// Inside the Android app everything loads from the phone; on the web it loads from the internet.
+const NATIVE=!!(window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform());
+const NP=NATIVE?(window.Capacitor.Plugins||{}):{};
+const CDN=NATIVE?new URL("mediapipe",location.href).href:"https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14";
+const MODEL=NATIVE?CDN+"/pose_landmarker_lite.task":"https://storage.googleapis.com/mediapipe-models/pose_landmarker/pose_landmarker_lite/float16/1/pose_landmarker_lite.task";
+const { PoseLandmarker, FilesetResolver } = await import(CDN+"/vision_bundle.mjs");
+
+/*ENGINE-START*/
+/* ===== Analysis engine (no DOM) ===== */
+// Stored landmarks (MediaPipe ids): nose, shoulders, elbows, wrists, index fingers, hips, knees, ankles
+const LM=[0,11,12,13,14,15,16,19,20,23,24,25,26,27,28];
+const K={nose:0,ls:1,rs:2,le:3,re:4,lw:5,rw:6,li:7,ri:8,lh:9,rh:10,lk:11,rk:12,la:13,ra:14};
+const SENS={strict:0.4,normal:0.5,lenient:0.65};
+const CM_PER_UNIT=50; // body unit ≈ shoulder-to-hip length of an adult
+const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const hyp=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+
+// Turn stored frames into body-relative features. Wrists/elbows/fingers are measured from the
+// shoulder centre in "body units", so camera distance and position matter less.
+function prep(frames,ar){
+  const F=[];let ref=null,okCount=0;
+  for(const f of frames){
+    const o={t:f.t,ok:false,pts:null,trunk:null};
+    if(f.p){
+      const P=k=>({x:f.p[k*3]/1000*ar,y:f.p[k*3+1]/1000,v:f.p[k*3+2]/100});
+      const ls=P(K.ls),rs=P(K.rs);
+      if(ls.v>.3&&rs.v>.3){
+        const lh=P(K.lh),rh=P(K.rh),hipOk=lh.v>.3&&rh.v>.3;
+        const ms={x:(ls.x+rs.x)/2,y:(ls.y+rs.y)/2},mh={x:(lh.x+rh.x)/2,y:(lh.y+rh.y)/2};
+        const sc=Math.max(hipOk?hyp(ms,mh):0,hyp(ls,rs)*1.25,0.02);
+        if(!ref)ref={x:ms.x,y:ms.y,sc};
+        o.pts=[K.lw,K.rw,K.le,K.re,K.li,K.ri].map(k=>{const q=P(k);return{x:(q.x-ms.x)/sc,y:(q.y-ms.y)/sc,v:q.v}});
+        o.pts.push({x:(ms.x-ref.x)/ref.sc*0.7,y:(ms.y-ref.y)/ref.sc*0.7,v:1});
+        o.trunk=hipOk?Math.atan2(Math.abs(ms.x-mh.x),mh.y-ms.y)*180/Math.PI:null;
+        o.ok=true;okCount++;
+      }
+    }
+    F.push(o);
+  }
+  let last=null;
+  for(const o of F){if(o.ok)last=o;else if(last){o.pts=last.pts.map(p=>({x:p.x,y:p.y,v:p.v*.5}));o.trunk=last.trunk}}
+  let nxt=null;
+  for(let i=F.length-1;i>=0;i--){const o=F[i];if(o.ok)nxt=o;else if(!o.pts&&nxt){o.pts=nxt.pts.map(p=>({x:p.x,y:p.y,v:p.v*.5}));o.trunk=nxt.trunk}}
+  // light smoothing (3-frame average)
+  const S=F.map((o,i)=>{if(!o.pts)return o;const a=F[i-1]&&F[i-1].pts?F[i-1]:o,b=F[i+1]&&F[i+1].pts?F[i+1]:o;
+    return{...o,pts:o.pts.map((p,k)=>({x:(a.pts[k].x+p.x+b.pts[k].x)/3,y:(a.pts[k].y+p.y+b.pts[k].y)/3,v:p.v}))}});
+  S.okCount=okCount;return S;
+}
+// Hand + body speed (body units per second), smoothed over ~0.5 s
+function speeds(F){
+  const v=F.map((o,i)=>{if(i===0||!o.pts||!F[i-1].pts)return 0;const dt=Math.max(.01,(o.t-F[i-1].t)/1000);const p=F[i-1].pts;
+    return(hyp(o.pts[0],p[0])+hyp(o.pts[1],p[1])+hyp(o.pts[6],p[6]))/dt});
+  const out=new Array(F.length);let a=0,b=0,sum=0;
+  for(let i=0;i<F.length;i++){while(b<F.length&&F[b].t<=F[i].t+250){sum+=v[b];b++}while(F[a].t<F[i].t-250){sum-=v[a];a++}out[i]=sum/Math.max(1,b-a)}
+  return out;
+}
+function autoTrim(F){
+  const v=speeds(F);const thr=Math.max(0.35,percentile(v,0.5)*0.4);
+  let s=0,e=F.length-1;while(s<e&&v[s]<thr)s++;while(e>s&&v[e]<thr)e--;
+  if(e-s<5)return[F[0].t,F[F.length-1].t];
+  return[Math.max(F[0].t,F[s].t-300),Math.min(F[F.length-1].t,F[e].t+300)];
+}
+function percentile(arr,q){const a=arr.filter(x=>isFinite(x)).slice().sort((x,y)=>x-y);if(!a.length)return 0;return a[Math.min(a.length-1,Math.floor(q*a.length))]}
+// Split a recording into elements at natural pauses / slow points of the hands
+function autoSplit(F,t0,t1,level){
+  const L={fewer:2500,normal:1200,more:700}[level]||1200;
+  const idx=[];F.forEach((o,i)=>{if(o.t>=t0&&o.t<=t1)idx.push(i)});
+  const v=speeds(F);const V=idx.map(i=>v[i]),T=idx.map(i=>F[i].t);
+  const thr=percentile(V,0.4);const cand=[];
+  for(let k=1;k<V.length-1;k++){if(V[k]<=V[k-1]&&V[k]<=V[k+1]&&V[k]<=thr)cand.push(k)}
+  cand.sort((a,b)=>V[a]-V[b]);const chosen=[];
+  for(const k of cand){const t=T[k];if(t-t0<L*.6||t1-t<L*.6)continue;if(chosen.every(x=>Math.abs(x-t)>=L))chosen.push(t);if(chosen.length>=40)break}
+  chosen.sort((a,b)=>a-b);return[t0,...chosen,t1];
+}
+function resample(F,rate){
+  const out=[];const end=F[F.length-1].t;let p=0;
+  for(let t=F[0].t;t<=end+1;t+=1000/rate){while(p<F.length-1&&Math.abs(F[p+1].t-t)<=Math.abs(F[p].t-t))p++;out.push({t,pts:F[p].pts,trunk:F[p].trunk})}
+  return out;
+}
+const PW=[1.5,1.5,.8,.8,1,1,.8];
+function fdist(a,b){let s=0,w=0;for(let k=0;k<7;k++){const pa=a.pts[k],pb=b.pts[k];const wk=Math.min(pa.v,pb.v)*PW[k];if(wk<.05)continue;s+=wk*hyp(pa,pb);w+=wk}return w?s/w:.5}
+// Dynamic time warping: lines up the employee's motion with the expert's, frame by frame
+function dtw(A,B){
+  const n=A.length,m=B.length,dir=new Uint8Array(n*m);let prev=new Float64Array(m),cur=new Float64Array(m);
+  for(let i=0;i<n;i++){
+    for(let j=0;j<m;j++){
+      const d=fdist(A[i],B[j]);
+      if(i===0&&j===0){cur[j]=d;continue}
+      let best=Infinity,dd=0;
+      if(i>0&&j>0&&prev[j-1]+d<best){best=prev[j-1]+d;dd=1}
+      if(i>0&&prev[j]+d+.02<best){best=prev[j]+d+.02;dd=2}
+      if(j>0&&cur[j-1]+d+.02<best){best=cur[j-1]+d+.02;dd=3}
+      cur[j]=best;dir[i*m+j]=dd;
+    }
+    const t=prev;prev=cur;cur=t;
+  }
+  const path=[];let i=n-1,j=m-1;
+  while(i>0||j>0){path.push([i,j]);const d=dir[i*m+j];if(d===1){i--;j--}else if(d===2)i--;else j--}
+  path.push([0,0]);path.reverse();return path;
+}
+function pathLen(R,a,b,k){let s=0;for(let i=a+1;i<=b;i++)s+=hyp(R[i].pts[k],R[i-1].pts[k]);return s}
+function meanPt(R,a,b,k){let x=0,y=0,w=0;for(let i=a;i<=b;i++){const p=R[i].pts[k];x+=p.x*p.v;y+=p.y*p.v;w+=p.v}return w?{x:x/w,y:y/w}:null}
+function meanTrunk(R,a,b){let s=0,n=0;for(let i=a;i<=b;i++)if(R[i].trunk!=null){s+=R[i].trunk;n++}return n?s/n:null}
+function dirWords(dx,dy){const w=[];if(Math.abs(dy)>.2)w.push(dy>0?"lower":"higher");if(Math.abs(dx)>.2)w.push(dx>0?"more to camera-right":"more to camera-left");return w.join(" and ")}
+
+// farthest wrist from the expert's position (body units); used to decide if a step's end position was reached
+function handDist(a,b){let d=0;for(const k of[0,1]){const pa=a.pts[k],pb=b.pts[k];if(Math.min(pa.v,pb.v)<.3)continue;d=Math.max(d,hyp(pa,pb))}return d}
+function meanCost(A,B,path){let s=0;for(const[i,j]of path)s+=fdist(A[i],B[j]);return s/path.length}
+function analyze(std,att,sensKey){
+  const C=SENS[sensKey]||SENS.normal,missThr=C*1.2;
+  const PS=prep(std.frames,std.ar),PA=prep(att.frames,att.ar);
+  if(PS.okCount<5)throw new Error("The standard has too few frames with a person.");
+  if(PA.okCount<5)throw new Error("No person was detected in this attempt. Check the camera position.");
+  const dS=Math.max(1,PS[PS.length-1].t-PS[0].t)/1000,dA=Math.max(1,PA[PA.length-1].t-PA[0].t)/1000;
+  const rate=clamp(Math.sqrt(2.5e6/(Math.max(dS,1)*Math.max(dA,1))),3,10);
+  const RS=resample(PS,rate),RA=resample(PA,rate);const n=RS.length,m=RA.length;
+  // 1. whole-cycle alignment
+  const path=dtw(RS,RA);const jmax=new Int32Array(n).fill(-1),jmin=new Int32Array(n).fill(m);
+  for(const[i,j]of path){if(j>jmax[i])jmax[i]=j;if(j<jmin[i])jmin[i]=j}
+  const els=std.elements,KN=els.length,t0=PS[0].t;
+  const iStart=els.map((e,k)=>{if(k===0)return 0;let i=0;while(i<n-1&&RS[i].t-t0<e.start)i++;return i});
+  const iEnd=els.map((e,k)=>k<KN-1?Math.max(iStart[k],iStart[k+1]-1):n-1);
+  const sub=(R,a,b)=>R.slice(a,b+1);
+  // 2. was each step's end position reached? anchor step ends on it
+  const reached=[],anchor=[],keyMin=[];let prev=0;
+  for(let k=0;k<KN;k++){
+    const jc=jmax[iEnd[k]],w=Math.round(Math.max(1.2,0.6*(els[k].end-els[k].start)/1000)*rate);
+    const cap=k<KN-1?Math.max(jc,(jc+jmax[iEnd[k+1]])>>1):m-1;
+    const lo=Math.max(prev,jc-w),hi=Math.min(m-1,jc+w,cap),ds=[];let best=Infinity,bj=-1;
+    for(let j=lo;j<=hi;j++){const d=handDist(RS[iEnd[k]],RA[j]);ds.push(d);if(d<best)best=d}
+    // among frames that reach the position, take the one closest to the aligned time (keeps timing inside holds)
+    for(let j=lo;j<=hi;j++){if(ds[j-lo]<=best+0.06&&(bj<0||Math.abs(j-jc)<Math.abs(bj-jc)))bj=j}
+    keyMin[k]=best;reached[k]=bj>=0&&best<=missThr;
+    if(k===KN-1){anchor[k]=m-1;reached[k]=reached[k]||bj>=0&&best<=missThr}
+    else anchor[k]=reached[k]?bj:-1;
+    if(reached[k])prev=anchor[k];
+  }
+  // 3. boundaries; runs of unreached steps are tested: skipped, or done differently?
+  const segA=new Array(KN),segB=new Array(KN),skipped=new Array(KN).fill(false);let P=0,k=0;
+  while(k<KN){
+    if(reached[k]){segA[k]=P;segB[k]=anchor[k]+1;P=segB[k];k++;continue}
+    let r2=k;while(r2<KN&&!reached[r2])r2++;
+    const nxt=r2<KN?r2:-1,Q=nxt>=0?anchor[nxt]:m-1;
+    let skip=false;
+    if(nxt>=0&&Q>P){const att=sub(RA,P,Q),withRun=sub(RS,iStart[k],iEnd[nxt]),noRun=sub(RS,iStart[nxt],iEnd[nxt]);
+      const cA=meanCost(withRun,att,dtw(withRun,att)),cB=meanCost(noRun,att,dtw(noRun,att));skip=cB<cA*0.85}
+    else if(nxt<0){const rem=(m-P)/rate,need=els.slice(k).reduce((s,e)=>s+(e.end-e.start),0)/1000;skip=rem<need*0.3}
+    else skip=true;
+    const last=nxt>=0?nxt:KN-1,endJ=nxt>=0?Q:m-1;
+    if(skip){for(let x=k;x<=(nxt>=0?r2-1:KN-1);x++){segA[x]=P;segB[x]=P;skipped[x]=true}
+      if(nxt>=0){segA[nxt]=P;segB[nxt]=Q+1;P=Q+1;k=nxt+1}else{if(P<m&&KN>0){const lk=k-1>=0?k-1:0;if(segB[lk]!=null)segB[lk]=m}k=KN}}
+    else{let p2=P;for(let x=k;x<=last;x++){const e=x===last?endJ+1:clamp(jmin[iStart[x+1]],p2,endJ+1);segA[x]=p2;segB[x]=e;p2=e}P=endJ+1;k=last+1}
+  }
+  if(KN&&segB[KN-1]<m&&!skipped[KN-1])segB[KN-1]=m;
+  // 4. per-step comparison
+  const amap=new Int32Array(m).fill(-1);
+  const aSpeed=j=>j>0?(hyp(RA[j].pts[0],RA[j-1].pts[0])+hyp(RA[j].pts[1],RA[j-1].pts[1]))*rate:0;
+  const elements=els.map((e,k)=>{
+    const stdT=(e.end-e.start)/1000,aA=segA[k],aB=segB[k],aN=Math.max(0,aB-aA),actT=aN/rate,sA=iStart[k],sB=iEnd[k];
+    let score=0,pause=0,extra=0;
+    if(aN>0){const S1=sub(RS,sA,sB),A1=sub(RA,aA,aB-1),pth=dtw(S1,A1);score=Math.round(100*Math.exp(-Math.pow(meanCost(S1,A1,pth)/C,2)));
+      let run=0,r0=0;const flush=()=>{if(run>=0.6*rate){let s=0;for(let j=r0;j<r0+run;j++)s+=aSpeed(aA+j);if(s/run>0.6)extra+=run/rate;else pause+=run/rate}run=0};
+      pth.forEach(([i,j],c)=>{amap[aA+j]=sA+i;if(c>0&&pth[c-1][0]===i&&pth[c-1][1]===j-1){if(run===0)r0=j;run++}else flush()});flush()}
+    const notes=[];let status="ok";
+    if(skipped[k]||aN===0||(aN/Math.max(1,sB-sA+1)<0.35&&score<60))status="missed";
+    else if(!reached[k]||score<55)status="method";
+    else if(actT>stdT*1.25&&actT-stdT>0.5)status="slow";
+    else if(actT<stdT*0.7&&stdT-actT>0.5)status="fast";
+    if(status!=="missed"&&aN>1){
+      for(const[h,name]of[[0,"Left"],[1,"Right"]]){
+        const ls=pathLen(RS,sA,sB,h),la=pathLen(RA,aA,aB-1,h);
+        if(ls>0.6&&la<ls*0.35)notes.push({kind:"hand",text:name+" hand is mostly idle here; the expert uses it ("+Math.round(la/ls*100)+"% of the expert's hand movement)."});
+        const ms=meanPt(RS,sA,sB,h),ma=meanPt(RA,aA,aB-1,h);
+        if(ms&&ma){const dx=ma.x-ms.x,dy=ma.y-ms.y,dd=Math.hypot(dx,dy);if(dd>0.35)notes.push({kind:"reach",text:name+" hand works "+dirWords(dx,dy)+" than the expert (≈"+Math.round(dd*CM_PER_UNIT)+" cm off)."})}
+      }
+      const ts=pathLen(RS,sA,sB,0)+pathLen(RS,sA,sB,1),ta=pathLen(RA,aA,aB-1,0)+pathLen(RA,aA,aB-1,1);
+      if(ts>0.5&&ta>ts*1.4)notes.push({kind:"travel",text:"Hands travel "+Math.round((ta/ts-1)*100)+"% more distance than the expert (extra or searching movements)."});
+      const trS=meanTrunk(RS,sA,sB),trA=meanTrunk(RA,aA,aB-1);
+      if(trS!=null&&trA!=null&&trA-trS>15)notes.push({kind:"bend",text:"Bends "+Math.round(trA-trS)+"° more than the expert (ergonomic risk, slower)."});
+      if(!reached[k])notes.unshift({kind:"pose",text:"The expert's end position for this step is never reached."});
+      if(k>0&&(skipped[k-1]))notes.unshift({kind:"after",text:"Starts from a different position because the previous step was missed."});
+    }
+    if(pause>0.5)notes.push({kind:"pause",text:"Pauses/hesitates about "+pause.toFixed(1)+" s."});
+    if(extra>0.5)notes.push({kind:"extra",text:"About "+extra.toFixed(1)+" s of movement the expert does not make."});
+    return{name:e.name,key:!!e.key,stdT,actT,score,status,notes,aStart:aA/rate,aEnd:aB/rate,sStart:e.start/1000,sEnd:e.end/1000};
+  });
+  let lastI=0;for(let j=0;j<m;j++){if(amap[j]<0)amap[j]=lastI;else lastI=amap[j]}
+  const stdTotal=elements.reduce((s,e)=>s+e.stdT,0),actTotal=m/rate;
+  const basic=stdTotal*(std.rating||100)/100;
+  const match=Math.round(elements.reduce((s,e)=>s+e.score*e.stdT,0)/Math.max(.001,stdTotal));
+  const missed=elements.filter(e=>e.status==="missed").length;
+  const imp=[];
+  elements.forEach((e,k)=>{
+    const lost=e.actT-e.stdT;
+    if(e.status==="missed")imp.push({k,sev:e.key?0:1,status:"missed",lost:0,title:(e.key?"Key step missed: ":"Step missed: ")+e.name,detail:"This step was not seen. Check whether it was skipped or done outside the camera view, then retrain it."+(e.key?" It is marked as a key point, so this is a quality risk.":"")});
+    else if(e.status==="method")imp.push({k,sev:2,status:"method",lost:Math.max(0,lost),title:"Different method: "+e.name,detail:(e.notes.length?e.notes.map(x=>x.text).join(" "):"Hand positions and path differ from the expert.")+" Watch this step in the replay and retrain the method."});
+    else if(e.status==="slow")imp.push({k,sev:3,status:"slow",lost,title:"Slow: "+e.name,detail:"Takes "+lost.toFixed(1)+" s longer ("+Math.round(e.actT/e.stdT*100)+"% of standard time). "+(e.notes.length?e.notes.map(x=>x.text).join(" "):"Same method, slower pace. Practise, and check material position.")});
+    else if(e.status==="fast"&&e.score<75)imp.push({k,sev:4,status:"fast",lost:0,title:"Rushed: "+e.name,detail:"Much faster than the expert with a different motion ("+e.score+"% match). Check that no quality step is skipped."});
+    else if(e.notes.length)imp.push({k,sev:5,status:e.status,lost:Math.max(0,lost),title:"Check: "+e.name,detail:e.notes.map(x=>x.text).join(" ")});
+  });
+  imp.sort((a,b)=>a.sev-b.sev||(b.lost-a.lost));
+  return{rate,amap:Array.from(amap),elements,improvements:imp,summary:{stdTotal,actTotal,basic,perf:Math.round(basic/Math.max(.1,actTotal)*100),match,missed,lost:Math.max(0,actTotal-stdTotal),sens:sensKey}};
+}
+/*ENGINE-END*/
+
+/* ===== Storage ===== */
+// In the Android app, standards and checks are JSON files in the app's private storage (motionstudy/...).
+// In a browser they live in IndexedDB.
+const FS=NATIVE?NP.Filesystem:null;
+const FileStore={dir:"motionstudy",
+  folder(s,stdId){return this.dir+"/"+s+(s==="attempts"?"/"+stdId:"")},
+  async list(path){try{const r=await FS.readdir({path,directory:"DATA"});return r.files.map(f=>typeof f==="string"?{name:f,type:"file"}:f)}catch(e){return[]}},
+  async readJson(path){try{const d=await FS.readFile({path,directory:"DATA",encoding:"utf8"});return JSON.parse(d.data)}catch(e){return null}},
+  async all(s,stdId){
+    if(s==="attempts"&&!stdId){const out=[];for(const d of await this.list(this.dir+"/attempts"))if(d.type==="directory")out.push(...await this.all("attempts",d.name));return out}
+    const p=this.folder(s,stdId),out=[];for(const f of await this.list(p)){if(!f.name.endsWith(".json"))continue;const j=await this.readJson(p+"/"+f.name);if(j)out.push(j)}return out},
+  async put(s,v){await FS.writeFile({path:this.folder(s,v.stdId)+"/"+v.id+".json",data:JSON.stringify(v),directory:"DATA",encoding:"utf8",recursive:true})},
+  async del(s,id,stdId){try{await FS.deleteFile({path:this.folder(s,stdId)+"/"+id+".json",directory:"DATA"})}catch(e){}}
+};
+const Store={db:null,mem:{standards:new Map(),attempts:new Map()},
+  open(){return new Promise(res=>{try{const r=indexedDB.open("motion-standard",1);
+    r.onupgradeneeded=()=>{const d=r.result;d.createObjectStore("standards",{keyPath:"id"});d.createObjectStore("attempts",{keyPath:"id"}).createIndex("std","stdId")};
+    r.onsuccess=()=>{this.db=r.result;res()};r.onerror=()=>res()}catch(e){res()}})},
+  req(store,mode,fn){if(!this.db)return Promise.resolve(fn(null));return new Promise((res,rej)=>{const t=this.db.transaction(store,mode);const q=fn(t.objectStore(store));t.oncomplete=()=>res(q?q.result:undefined);t.onerror=()=>rej(t.error)})},
+  async migrate(){ // copy anything saved earlier in the browser database into files (runs once)
+    if(!FS||!this.db)return;let done=false;try{done=localStorage.getItem("ms.migrated")==="1"}catch(e){}if(done)return;
+    for(const s of["standards","attempts"]){let rows=[];try{rows=await this.req(s,"readonly",o=>o.getAll())}catch(e){}for(const v of rows||[])try{await FileStore.put(s,v)}catch(e){}}
+    try{localStorage.setItem("ms.migrated","1")}catch(e){}},
+  all(s){if(FS)return FileStore.all(s);return this.db?this.req(s,"readonly",o=>o.getAll()):Promise.resolve([...this.mem[s].values()])},
+  get(s,id){return this.db?this.req(s,"readonly",o=>o.get(id)):Promise.resolve(this.mem[s].get(id))},
+  put(s,v){if(FS)return FileStore.put(s,v);if(!this.db){this.mem[s].set(v.id,v);return Promise.resolve()}return this.req(s,"readwrite",o=>o.put(v))},
+  del(s,id,stdId){if(FS)return FileStore.del(s,id,stdId);if(!this.db){this.mem[s].delete(id);return Promise.resolve()}return this.req(s,"readwrite",o=>o.delete(id))},
+  async byStd(id){if(FS)return FileStore.all("attempts",id);return(await this.all("attempts")).filter(a=>a.stdId===id)}
+};
+
+/* ===== Helpers ===== */
+const $=s=>document.querySelector(s);
+const app=$("#app");
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const fmtS=s=>s<60?s.toFixed(1)+" s":Math.floor(s/60)+" min "+String(Math.round(s%60)).padStart(2,"0")+" s";
+const fmtClock=ms=>{const s=Math.max(0,ms)/1000;return String(Math.floor(s/60)).padStart(2,"0")+":"+(s%60).toFixed(1).padStart(4,"0")};
+const fmtDate=ts=>new Date(ts).toLocaleString([], {dateStyle:"medium",timeStyle:"short"});
+let toastT;function toast(m){const t=$("#toast");t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
+async function download(name,text,type){
+  if(NATIVE&&NP.Filesystem&&NP.Share){try{const r=await NP.Filesystem.writeFile({path:name,data:text,directory:"CACHE",encoding:"utf8"});await NP.Share.share({title:name,files:[r.uri]})}catch(e){if(!/cancel/i.test(String(e&&(e.message||e))))toast("Couldn't share the file.")}return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
+function abToB64(buf){let s="";const b=new Uint8Array(buf);for(let i=0;i<b.length;i+=0x8000)s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000));return btoa(s)}
+async function shareBinary(name,b64,mime){
+  if(NATIVE&&NP.Filesystem&&NP.Share){try{const r=await NP.Filesystem.writeFile({path:name,data:b64,directory:"CACHE"});await NP.Share.share({title:name,files:[r.uri]})}catch(e){if(!/cancel/i.test(String(e&&(e.message||e))))toast("Couldn't share the file.")}return}
+  const bin=atob(b64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([u],{type:mime}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
+const LIBS={jspdf:"jspdf/4.2.1/jspdf.umd.min.js",html2canvas:"html2canvas/1.4.1/html2canvas.min.js",exceljs:"exceljs/4.4.0/exceljs.min.js"};
+const libLoaded={};
+function loadLib(k){if(libLoaded[k])return libLoaded[k];const file=LIBS[k].split("/").pop();
+  const src=NATIVE?"lib/"+file:"https://cdnjs.cloudflare.com/ajax/libs/"+LIBS[k];
+  return libLoaded[k]=new Promise((res,rej)=>{const sc=document.createElement("script");sc.src=src;sc.onload=res;sc.onerror=()=>{libLoaded[k]=null;rej(new Error("Couldn't load "+k))};document.head.appendChild(sc)})}
+const safeName=s=>String(s||"standard").replace(/[^\w\-]+/g,"-").replace(/-+/g,"-").slice(0,50);
+function nearest(frames,t){let lo=0,hi=frames.length-1;while(hi-lo>1){const mid=(lo+hi)>>1;if(frames[mid].t<t)lo=mid;else hi=mid}return Math.abs(frames[lo].t-t)<=Math.abs(frames[hi].t-t)?frames[lo]:frames[hi]}
+const STATUS={ok:{l:"OK",c:"var(--ok)"},slow:{l:"Slow",c:"var(--slow)"},method:{l:"Different method",c:"var(--method)"},missed:{l:"Missed",c:"var(--miss)"},fast:{l:"Faster",c:"var(--fast)"}};
+const ELCOL=["#4db2ab","#6aa2df","#e3a332","#9f8ae4","#3dbd83","#e17461","#c7b54a","#5fc3e4"];
+let audioCtx=null;function beep(f=880,d=.15){try{audioCtx=audioCtx||new(window.AudioContext||window.webkitAudioContext)();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.frequency.value=f;g.gain.value=.15;o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d)}catch(e){}}
+let wake=null;async function keepAwake(){if(NATIVE&&NP.KeepAwake){try{await NP.KeepAwake.keepAwake()}catch(e){}return}try{if("wakeLock" in navigator&&!wake){wake=await navigator.wakeLock.request("screen");wake.addEventListener("release",()=>wake=null)}}catch(e){}}
+
+/* ===== Skeleton drawing ===== */
+const EDGES=[[K.ls,K.rs],[K.ls,K.le],[K.le,K.lw],[K.lw,K.li],[K.rs,K.re],[K.re,K.rw],[K.rw,K.ri],[K.ls,K.lh],[K.rs,K.rh],[K.lh,K.rh],[K.lh,K.lk],[K.lk,K.la],[K.rh,K.rk],[K.rk,K.ra]];
+function absPts(p,W,H){return LM.map((_,k)=>({x:p[k*3]/1000*W,y:p[k*3+1]/1000*H,v:p[k*3+2]/100}))}
+function relPts(p,ar,W,H){
+  const P=k=>({x:p[k*3]/1000*ar,y:p[k*3+1]/1000,v:p[k*3+2]/100});
+  const ls=P(K.ls),rs=P(K.rs),lh=P(K.lh),rh=P(K.rh);const ms={x:(ls.x+rs.x)/2,y:(ls.y+rs.y)/2},mh={x:(lh.x+rh.x)/2,y:(lh.y+rh.y)/2};
+  const sc=Math.max(lh.v>.3&&rh.v>.3?hyp(ms,mh):0,hyp(ls,rs)*1.25,.02);const u=Math.min(H*.18,W*.3),cx=W/2,cy=H*.3;
+  return LM.map((_,k)=>{const q=P(k);return{x:cx+(q.x-ms.x)/sc*u,y:cy+(q.y-ms.y)/sc*u,v:q.v}});
+}
+function drawSkel(ctx,pts,color,{width=4,dash=null,alpha=1,joints=true}={}){
+  ctx.save();ctx.globalAlpha=alpha;ctx.strokeStyle=color;ctx.lineWidth=width;ctx.lineCap="round";if(dash)ctx.setLineDash(dash);
+  for(const[a,b]of EDGES){if(pts[a].v<.35||pts[b].v<.35)continue;ctx.beginPath();ctx.moveTo(pts[a].x,pts[a].y);ctx.lineTo(pts[b].x,pts[b].y);ctx.stroke()}
+  ctx.setLineDash([]);
+  if(joints){ctx.fillStyle=color;for(const k of[K.nose,K.lw,K.rw,K.le,K.re,K.lk,K.rk]){const p=pts[k];if(p.v<.35)continue;ctx.beginPath();ctx.arc(p.x,p.y,width*1.1,0,7);ctx.fill()}}
+  ctx.restore();
+}
+function sizeCanvas(cv,ar){const w=cv.clientWidth||640;cv.width=Math.round(w*(window.devicePixelRatio||1));cv.height=Math.round(cv.width/ar)}
+
+/* ===== Pose engine ===== */
+const Pose={lm:null,loading:null,lastTs:0,
+  load(){if(this.lm)return Promise.resolve(this.lm);if(!this.loading){this.loading=(async()=>{const files=await FilesetResolver.forVisionTasks(CDN+"/wasm");
+    const o=d=>({baseOptions:{modelAssetPath:MODEL,delegate:d},runningMode:"VIDEO",numPoses:1,minPoseDetectionConfidence:.5,minPosePresenceConfidence:.5,minTrackingConfidence:.5});
+    try{this.lm=await PoseLandmarker.createFromOptions(files,o("GPU"))}catch(e){this.lm=await PoseLandmarker.createFromOptions(files,o("CPU"))}return this.lm})();
+    this.loading.catch(()=>{this.loading=null})}return this.loading},
+  detect(v){const ts=Math.max(performance.now(),this.lastTs+1);this.lastTs=ts;try{const r=this.lm.detectForVideo(v,ts);return r.landmarks&&r.landmarks[0]||null}catch(e){return null}}
+};
+const encode=lm=>{const p=new Array(LM.length*3);LM.forEach((id,i)=>{const q=lm[id];p[i*3]=Math.round(q.x*1000);p[i*3+1]=Math.round(q.y*1000);p[i*3+2]=Math.round((q.visibility??1)*100)});return p};
+
+/* ===== App state ===== */
+const S={view:"library",stds:[],factory:new Map(),cur:null,attempts:[],sens:"normal"};
+try{S.sens=localStorage.getItem("ms.sens")||"normal"}catch(e){}
+const ACT={};
+let player=null;
+function stopPlayer(){if(player){player.stop();player=null}}
+function go(view){if(!S.user&&view!=="login")view="login";stopPlayer();if(S.view==="jbs")jbsFlush();if(S.view==="record"&&view!=="record")stopRecordView();S.view=view;render();window.scrollTo(0,0)}
+function render(){
+  if(!S.user)S.view="login";
+  const v={library:vLibrary,std:vStd,record:vRecord,edit:vEdit,review:vReview,result:vResult,jbs:vJbs,login:vLogin,users:vUsers,password:vPassword}[S.view];
+  app.innerHTML=v();
+  const m={record:mountRecord,edit:mountEdit,review:mountReview,result:mountResult,jbs:mountJbs}[S.view];if(m)m();
+}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const f=ACT[b.dataset.act];if(f){e.preventDefault();f(b.dataset,b)}});
+document.addEventListener("change",e=>{const t=e.target;const f=t.dataset&&ACT[t.dataset.change];if(f)f(t.dataset,t)});
+document.addEventListener("input",e=>{const t=e.target;const f=t.dataset&&ACT[t.dataset.input];if(f)f(t.dataset,t)});
+ACT.home=()=>{if(S.user)go("library")};
+
+/* ===== Library ===== */
+async function loadStds(){
+  const local=await Store.all("standards");const map=new Map();
+  for(const s of S.factory.values())map.set(s.id,{...s,factory:true});
+  for(const s of local){const f=map.get(s.id);if(!f||(s.updated||0)>=(f.updated||0))map.set(s.id,{...s,factory:!!f&&(f.updated||0)===(s.updated||0)})}
+  S.stds=[...map.values()].sort((a,b)=>(b.updated||0)-(a.updated||0));
+}
+function vLibrary(){
+  let h=`<div><h1>Motion standards</h1><p class="lead">Record an expert doing a task once. Then record any employee doing the same task. The app lines the two motions up and shows each step that was missed, slow, or done differently.</p></div>
+  <section class="steps"><div class="step"><b>1</b><h3>Record the expert</h3><p class="note">Phone on a stand, same view every time. One clean cycle of the task.</p></div>
+  <div class="step"><b>2</b><h3>Name the steps</h3><p class="note">The app splits the cycle into elements. Rename, split or merge them, mark key points.</p></div>
+  <div class="step"><b>3</b><h3>Check employees</h3><p class="note">Same camera position. Get time per step, missed steps, extra motions and a side-by-side replay.</p></div></section>
+  ${can("edit")?`<div class="row"><button class="btn primary big" data-act="newStd">Record new standard</button></div>`:""}`;
+  h+=`<section class="panel"><div class="row between"><h2>Standards on this phone</h2><span class="note">${S.stds.length}</span></div>`;
+  if(!S.stds.length)h+=`<p class="note">No standards yet. Record an expert, or import a standard file someone shared with you.</p>`;
+  else h+=`<div class="list">`+S.stds.map(s=>`<button class="item" data-act="openStd" data-id="${esc(s.id)}"><div class="item-main"><h3>${esc(s.name)}</h3><div class="meta">${esc(s.area||"")}${s.area?" · ":""}${s.elements.length} steps · expert ${fmtS(s.duration/1000)}${s.expert?" · "+esc(s.expert):""}</div></div>${s.factory?'<span class="chip factory">Factory library</span>':""}</button>`).join("")+`</div>`;
+  let lastB="";try{lastB=localStorage.getItem("ms.lastBackup")||""}catch(e){}
+  const old=S.stds.length&&(!lastB||Date.now()-(+lastB)>7*864e5);
+  h+=`</section><section class="panel"><h2>Google Drive backup</h2>
+  <p class="note">Standards and checks are saved on this phone. Back them up to Google Drive to keep them safe or move them to another phone: tap <b>Back up</b>, choose <b>Drive</b> in the share menu, and pick a folder.</p>
+  ${old?`<p class="note" style="color:var(--slow)">${lastB?"Last backup "+fmtDate(+lastB)+".":"Not backed up yet."} Back up after recording new standards.</p>`:lastB?`<p class="note">Last backup ${fmtDate(+lastB)}.</p>`:""}
+  <div class="row">${can("edit")?`<button class="btn sm primary" data-act="backup"${S.stds.length?"":" disabled"}>Back up to Google Drive</button>`:""}${can("users")?`<label class="btn sm" for="importFile">Restore from Drive / import file</label><input type="file" id="importFile" accept="*/*" data-change="importFile" hidden>`:""}</div>
+  <p class="note">To restore, tap Restore, open the menu (☰) in the file picker, choose <b>Drive</b>, and pick the backup file.</p></section>
+  <section class="panel"><h2>Comparison strictness</h2><div class="seg">${["strict","normal","lenient"].map(k=>`<button class="${S.sens===k?"on":""}" data-act="sens" data-k="${k}">${k[0].toUpperCase()+k.slice(1)}</button>`).join("")}</div><p class="note">How different a motion must be before it counts as a different method. Use Strict for precise hand work, Lenient when the camera view varies a lot.</p></section>`;
+  return h;
+}
+ACT.sens=d=>{S.sens=d.k;try{localStorage.setItem("ms.sens",d.k)}catch(e){}render()};
+ACT.newStd=()=>{R.mode="standard";R.std=null;go("record")};
+ACT.openStd=async d=>{const s=S.stds.find(x=>x.id===d.id);if(!s)return;S.cur=s;S.attempts=(await Store.byStd(s.id)).sort((a,b)=>b.created-a.created);go("std")};
+ACT.backup=async()=>{$("#busy").textContent="Preparing backup…";$("#busy").hidden=false;
+  try{const stds=(await Store.all("standards"));const atts=FS?await FileStore.all("attempts"):await Store.all("attempts");
+    const name="MotionStudy-backup-"+new Date().toISOString().slice(0,10)+".json";$("#busy").hidden=true;
+    await download(name,JSON.stringify({type:"motion-backup",version:1,created:Date.now(),standards:stds,attempts:atts,users:Users.list}),"application/json");
+    try{localStorage.setItem("ms.lastBackup",String(Date.now()))}catch(e){}render()}
+  catch(e){$("#busy").hidden=true;toast("Backup failed: "+(e.message||e))}};
+ACT.exportLib=()=>{download("standards.json",JSON.stringify({type:"motion-library",version:1,exported:Date.now(),standards:S.stds.map(({factory,...s})=>s)}),"application/json");toast("Library downloaded")};
+ACT.importFile=async(d,el)=>{const f=el.files&&el.files[0];if(!f)return;try{const j=JSON.parse(await f.text());const list=j.type==="motion-library"?j.standards:j.type==="motion-standard"?[j.standard]:j.type==="motion-backup"?j.standards:Array.isArray(j)?j:[];
+  const lst=j.type==="motion-backup"?j.standards:list;
+  const ok=(lst||[]).filter(s=>s&&s.id&&Array.isArray(s.frames)&&Array.isArray(s.elements));for(const s of ok)await Store.put("standards",s);
+  if(j.type==="motion-backup"&&Array.isArray(j.users)){let nu=0;for(const u of j.users)if(u&&u.uid&&u.hash&&!Users.find(u.uid)){Users.list.push(u);nu++}if(nu)await Users.save()}
+  let na=0;if(j.type==="motion-backup")for(const a of j.attempts||[]){if(a&&a.id&&a.stdId&&a.result){await Store.put("attempts",a);na++}}
+  await loadStds();render();toast(ok.length?"Restored "+ok.length+" standard"+(ok.length>1?"s":"")+(na?" and "+na+" check"+(na>1?"s":""):""):"No standards found in that file")}catch(e){toast("That file isn't a Motion Study file.")}el.value=""};
+
+/* ===== Standard detail ===== */
+function vStd(){const s=S.cur;const smv=(s.duration/1000)*(s.rating||100)/100*(1+(s.allow||0)/100)/60;
+  let h=`<div class="row"><button class="link" data-act="home">← All standards</button></div><div><div class="eyebrow">${esc(s.area||"Standard")}</div><h1>${esc(s.name)}</h1><p class="lead">Expert${s.expert?" "+esc(s.expert):""} · recorded ${fmtDate(s.created)}${s.createdBy?" by "+esc(s.createdBy):""}</p></div>
+  <div class="stats"><div class="stat"><b class="num">${fmtS(s.duration/1000)}</b><span>expert cycle time</span></div><div class="stat"><b class="num">${smv.toFixed(2)}</b><span>SMV (min) at ${s.rating||100}% rating, ${s.allow||0}% allowance</span></div><div class="stat"><b class="num">${s.elements.length}</b><span>steps</span></div><div class="stat"><b class="num">${S.attempts.length}</b><span>employee checks</span></div></div>
+  <div class="row"><button class="btn primary big" data-act="checkEmp">Check an employee</button></div>
+  <section class="panel"><h2>Steps</h2><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Step</th><th class="r">Time</th><th class="r">Share</th><th>Key point</th></tr></thead><tbody>${s.elements.map((e,i)=>`<tr><td class="num">${i+1}</td><td>${esc(e.name)}</td><td class="r num">${((e.end-e.start)/1000).toFixed(1)} s</td><td class="r num">${Math.round((e.end-e.start)/s.duration*100)}%</td><td>${e.key?"Yes":""}</td></tr>`).join("")}</tbody></table></div>
+  <div class="row"><button class="btn sm primary" data-act="openJbs">Job Breakdown Sheet</button>${can("edit")?`<button class="btn sm" data-act="editStd">Edit steps</button><button class="btn sm" data-act="exportStd">Save to Google Drive</button>`:""}</div></section>`;
+  h+=`<section class="panel"><div class="row between"><h2>Employee checks</h2>${S.attempts.length?'<button class="btn sm" data-act="histCsv">Download CSV</button>':""}</div>`;
+  if(!S.attempts.length)h+=`<p class="note">No checks yet. Tap Check an employee and record them doing the same task, with the camera in the same place as for the expert.</p>`;
+  else h+=`<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Employee</th><th>Checked by</th><th class="r">Time</th><th class="r">Performance</th><th class="r">Method match</th><th class="r">Missed</th></tr></thead><tbody>${S.attempts.map(a=>`<tr class="click" data-act="openAtt" data-id="${esc(a.id)}"><td>${fmtDate(a.created)}</td><td>${esc(a.operator||"—")}${a.opId?" · "+esc(a.opId):""}</td><td>${esc(a.checkedBy||"")}</td><td class="r num">${fmtS(a.result.summary.actTotal)}</td><td class="r num">${a.result.summary.perf}%</td><td class="r num">${a.result.summary.match}%</td><td class="r num" style="color:${a.result.summary.missed?"var(--miss)":"inherit"}">${a.result.summary.missed}</td></tr>`).join("")}</tbody></table></div>`;
+  h+=`</section>`+(can("delete")?`<section class="panel"><div class="row between"><span class="note">Deleting removes this standard and its checks from this phone.</span><button class="btn sm danger" data-act="delStd">Delete standard</button></div></section>`:"");
+  return h;
+}
+ACT.checkEmp=()=>{R.mode="attempt";R.std=S.cur;go("record")};
+ACT.editStd=()=>{const s=S.cur;E.init({frames:s.frames,ar:s.ar,marks:[]},s);go("edit")};
+ACT.exportStd=()=>{const{factory,...s}=S.cur;download("standard-"+safeName(s.name)+".json",JSON.stringify({type:"motion-standard",version:1,standard:s}),"application/json")};
+ACT.histCsv=()=>{const s=S.cur;const rows=[["date","checked_by","employee","employee_id","actual_s","standard_s","performance_pct","method_match_pct","missed_steps",...s.elements.map((e,i)=>"step"+(i+1)+"_s")]];
+  S.attempts.forEach(a=>rows.push([fmtDate(a.created),a.checkedBy||"",a.operator||"",a.opId||"",a.result.summary.actTotal.toFixed(1),a.result.summary.stdTotal.toFixed(1),a.result.summary.perf,a.result.summary.match,a.result.summary.missed,...a.result.elements.map(e=>e.actT.toFixed(1))]));
+  download("checks-"+safeName(s.name)+".csv",toCsv(rows),"text/csv")};
+const toCsv=rows=>rows.map(r=>r.map(v=>{v=String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(",")).join("\n");
+ACT.delStd=async()=>{if(!confirm("Delete this standard and all its employee checks from this phone?"))return;for(const a of S.attempts)await Store.del("attempts",a.id,a.stdId);await Store.del("standards",S.cur.id);
+  if(S.factory.has(S.cur.id))toast("Removed from this phone. It will come back while it is in the factory library file.");await loadStds();go("library")};
+ACT.openAtt=d=>{const a=S.attempts.find(x=>x.id===d.id);if(!a)return;Res.att=a;Res.std=S.cur;go("result")};
+
+/* ===== Record ===== */
+const R={mode:"standard",std:null,src:"camera",facing:"environment",stream:null,file:null,raf:0,recording:false,counting:false,frames:[],marks:[],t0:0,lastDet:0,lastVT:-1,ar:4/3,autoStop:true,cd:5,status:""};
+function vRecord(){const att=R.mode==="attempt";
+  return`<div class="row"><button class="link" data-act="${att?"backStd":"home"}">← ${att?"Back to standard":"All standards"}</button></div>
+  <div><div class="eyebrow">${att?"Employee check":"New standard"}</div><h1>${att?esc(R.std.name):"Record the expert"}</h1></div>
+  <div class="seg"><button class="${R.src==="camera"?"on":""}" data-act="src" data-v="camera">Live camera</button><button class="${R.src==="file"?"on":""}" data-act="src" data-v="file">Video file</button></div>
+  ${R.src==="file"?`<div class="row"><label class="btn sm" for="vfile">Choose video</label><input type="file" id="vfile" accept="video/*" data-change="vfile" hidden><span class="note" id="vname">${R.file?esc(R.file.name):"Record with the phone's normal camera, then pick the video here."}</span></div>`:""}
+  <div class="stage${R.src==="camera"&&R.facing==="user"?" mirror":""}" id="stage"><video id="rv" playsinline muted></video><canvas id="rc"></canvas>
+    <div class="hud"><span class="pill" id="hudL">Preview</span><span class="pill num" id="hudR"></span></div>
+    <div class="count" id="count" hidden></div><div class="msg" id="rmsg"><p class="note" id="rmsgT">Loading the body-tracking model…</p></div></div>
+  ${att?`<div class="bar"><i id="pbar" style="width:0%"></i></div><p class="note">The dashed outline is the expert's start position. Move the phone until the employee roughly fits it.</p>`:""}
+  <div class="row">${R.src==="camera"?`<button class="btn sm" data-act="flip">Flip camera</button>`:""}${!att?`<button class="btn sm" id="markBtn" data-act="mark" disabled>Mark step</button>`:""}
+    ${R.src==="camera"?`<select id="cd" data-change="cd" style="width:auto;min-height:38px">${[0,3,5,10].map(s=>`<option value="${s}"${R.cd===s?" selected":""}>${s?s+" s countdown":"No countdown"}</option>`).join("")}</select>`:""}</div>
+  ${att?`<label class="check"><input type="checkbox" id="autoStop" data-change="autoStop"${R.autoStop?" checked":""}> Stop by itself when the employee stays still for 3 s at the end</label>`:""}
+  <div class="row"><button class="btn primary big" id="recBtn" data-act="recToggle" disabled>Start recording</button></div>
+  <section class="panel"><h2>Camera placement</h2><ul class="tips"><li>Phone on a stand or clamp, 2–3 m away, landscape. Do not move it between recordings.</li><li>Whole upper body and both hands in view. Light in front of the person, not behind.</li><li>Use the same position and angle for the expert and for every employee.</li>${att?"":"<li>Record one clean, typical cycle. Tap Mark step at each step change if you want to set the steps yourself.</li>"}</ul></section>`;
+}
+ACT.backStd=()=>go("std");
+ACT.src=d=>{if(R.recording)return;R.src=d.v;stopRecordView();render()};
+ACT.flip=async()=>{if(R.recording)return;R.facing=R.facing==="environment"?"user":"environment";$("#stage").classList.toggle("mirror",R.facing==="user");try{await openCam()}catch(e){recMsg("Couldn't switch camera.")}};
+ACT.cd=(d,el)=>{R.cd=+el.value};
+ACT.autoStop=(d,el)=>{R.autoStop=el.checked};
+ACT.vfile=(d,el)=>{const f=el.files&&el.files[0];if(!f)return;R.file=f;$("#vname").textContent=f.name;const v=$("#rv");v.src=URL.createObjectURL(f);v.onloadeddata=()=>{R.ar=v.videoWidth/v.videoHeight;sizeStage();readyCheck()}};
+ACT.mark=()=>{if(R.recording){R.marks.push(curT());beep(1200,.06);toast("Step marked at "+fmtClock(curT()))}};
+function recMsg(t){const m=$("#rmsg");if(!m)return;if(t){m.hidden=false;$("#rmsgT").textContent=t}else m.hidden=true}
+function sizeStage(){const v=$("#rv"),c=$("#rc"),st=$("#stage");if(!v||!v.videoWidth)return;c.width=v.videoWidth;c.height=v.videoHeight;st.style.aspectRatio=v.videoWidth+"/"+v.videoHeight}
+async function openCam(){
+  if(R.stream)R.stream.getTracks().forEach(t=>t.stop());
+  R.stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:R.facing,width:{ideal:1280},height:{ideal:720}},audio:false});
+  const v=$("#rv");v.srcObject=R.stream;await v.play();R.ar=v.videoWidth/v.videoHeight;sizeStage();
+}
+function readyCheck(){const ok=!!Pose.lm&&(R.src==="camera"?!!R.stream:!!R.file);const b=$("#recBtn");if(b)b.disabled=!ok;
+  if(ok)recMsg(null);else if(Pose.lm&&R.src==="file")recMsg("Choose a video to analyze.")}
+async function mountRecord(){
+  R.recording=false;R.counting=false;R.lastVT=-1;
+  if(!window.isSecureContext||!navigator.mediaDevices){recMsg(NATIVE?"This phone's browser engine has no camera support. Update Android System WebView from the Play Store.":"The camera only works when this page is opened from an https:// address.");}
+  Pose.load().then(()=>{readyCheck();if(!R.stream&&R.src==="camera")recMsg("Opening camera…")}).catch(()=>recMsg(NATIVE?"Couldn't start the body-tracking model on this phone. Close the app and open it again.":"Couldn't load the body-tracking model. Check the internet connection, then go back and open this screen again."));
+  if(R.src==="camera"&&navigator.mediaDevices){try{await openCam();readyCheck();keepAwake()}catch(e){recMsg(e&&e.name==="NotAllowedError"?(NATIVE?"Camera permission was refused. Open Android Settings → Apps → Motion Study → Permissions → Camera → Allow, then come back.":"Camera permission was refused. Allow the camera for this site in the browser settings, then reload."):"Couldn't open the camera: "+(e.message||e))}}
+  if(R.src==="file"&&R.file){const v=$("#rv");v.src=URL.createObjectURL(R.file);v.onloadeddata=()=>{R.ar=v.videoWidth/v.videoHeight;sizeStage();readyCheck()}}
+  cancelAnimationFrame(R.raf);R.raf=requestAnimationFrame(recLoop);
+}
+function stopRecordView(){cancelAnimationFrame(R.raf);R.recording=false;R.counting=false;if(R.stream){R.stream.getTracks().forEach(t=>t.stop());R.stream=null}const v=$("#rv");if(v){try{v.pause()}catch(e){}}}
+const curT=()=>R.src==="file"?$("#rv").currentTime*1000:performance.now()-R.t0;
+function recLoop(){
+  if(S.view!=="record")return;R.raf=requestAnimationFrame(recLoop);
+  const v=$("#rv");if(!v||!Pose.lm||v.readyState<2)return;
+  const now=performance.now();if(now-R.lastDet<60)return;if(v.currentTime===R.lastVT)return;
+  R.lastVT=v.currentTime;R.lastDet=now;
+  const lm=Pose.detect(v);const c=$("#rc"),ctx=c.getContext("2d");ctx.clearRect(0,0,c.width,c.height);
+  if(R.mode==="attempt"&&!R.recording&&R.std){const f0=R.std.frames.find(f=>f.p);if(f0)drawSkel(ctx,absPts(f0.p,c.width,c.height),"#f2f5f4",{width:Math.max(3,c.width/220),dash:[10,8],alpha:.7,joints:false})}
+  if(lm)drawSkel(ctx,absPts(encode(lm),c.width,c.height),R.recording?"#ff7b6b":"#4db2ab",{width:Math.max(3,c.width/160)});
+  if(R.recording){
+    const t=curT();R.frames.push({t:Math.round(t),p:lm?encode(lm):null});
+    $("#hudR").textContent=fmtClock(t);
+    if(R.mode==="attempt"){const p=$("#pbar");if(p){const r=t/R.std.duration;p.style.width=Math.min(100,r*100)+"%";p.classList.toggle("over",r>1)}
+      if(R.autoStop&&R.src==="camera"&&t>Math.max(4000,R.std.duration*.5)&&stillFor(3000))finishRec()}
+  }else $("#hudL").textContent=lm?"Person found":"No person in view";
+}
+function stillFor(ms){const fr=R.frames;if(!fr.length)return false;const end=fr[fr.length-1].t;if(end-fr[0].t<ms)return false;
+  const seg=fr.filter(f=>f.t>=end-ms);if(seg.length<5)return false;const P=prep(seg,R.ar);const v=speeds(P);return v.reduce((a,b)=>a+b,0)/v.length<0.25}
+ACT.recToggle=async()=>{
+  if(R.recording){finishRec();return}if(R.counting)return;
+  beep(660,.01);keepAwake();
+  if(R.src==="camera"&&R.cd>0){R.counting=true;const c=$("#count");c.hidden=false;$("#recBtn").textContent="Cancel";
+    for(let s=R.cd;s>0;s--){if(!R.counting||S.view!=="record"){c.hidden=true;$("#recBtn").textContent="Start recording";return}c.textContent=s;beep(s<=3?880:660,.08);await new Promise(r=>setTimeout(r,1000))}
+    c.hidden=true;R.counting=false;}
+  startRec();
+};
+async function startRec(){
+  R.frames=[];R.marks=[];R.recording=true;beep(1320,.25);
+  $("#recBtn").textContent="Stop";$("#recBtn").classList.add("stop");$("#hudL").textContent="Recording";$("#hudL").classList.add("rec");const mb=$("#markBtn");if(mb)mb.disabled=false;
+  if(R.src==="file"){const v=$("#rv");v.currentTime=0;v.onended=()=>finishRec();try{await v.play()}catch(e){toast("Couldn't play the video.");R.recording=false}}
+  else R.t0=performance.now();
+}
+function finishRec(){
+  if(!R.recording)return;R.recording=false;beep(440,.3);const v=$("#rv");if(R.src==="file")try{v.pause()}catch(e){}
+  const withPerson=R.frames.filter(f=>f.p).length;
+  if(withPerson<10){toast("No person was detected. Check the camera view and try again.");render();return}
+  const rec={frames:R.frames.slice(),marks:R.marks.slice(),ar:R.ar};
+  if(R.mode==="standard"){E.init(rec,null);go("edit")}else{RV.init(rec,R.std);go("review")}
+}
+
+/* ===== Shared player ===== */
+class Player{
+  constructor(root,dur,draw,onTime){this.root=root;this.dur=Math.max(1,dur);this.draw=draw;this.onTime=onTime;this.t=0;this.playing=false;this.speed=1;
+    this.cv=root.querySelector("canvas");this.rng=root.querySelector("input[type=range]");this.btn=root.querySelector("[data-pl=play]");this.tm=root.querySelector(".time");this.sp=root.querySelector("[data-pl=speed]");
+    this.rng.max=this.dur;this.rng.addEventListener("input",()=>{this.pause();this.seek(+this.rng.value)});this.btn.addEventListener("click",()=>this.toggle());
+    if(this.sp)this.sp.addEventListener("change",()=>{this.speed=+this.sp.value});
+    this.ro=new ResizeObserver(()=>this.seek(this.t));this.ro.observe(this.cv)}
+  seek(t){this.t=clamp(t,0,this.dur);this.rng.value=this.t;this.tm.textContent=fmtClock(this.t)+" / "+fmtClock(this.dur);this.draw(this.cv,this.t);if(this.onTime)this.onTime(this.t)}
+  toggle(){this.playing?this.pause():this.play()}
+  play(){if(this.t>=this.dur-1)this.t=0;this.playing=true;this.btn.textContent="Pause";let last=performance.now();
+    const step=()=>{if(!this.playing)return;const n=performance.now();this.t+=(n-last)*this.speed;last=n;if(this.t>=this.dur){this.t=this.dur;this.pause()}this.seek(this.t);if(this.playing)this.raf=requestAnimationFrame(step)};this.raf=requestAnimationFrame(step)}
+  pause(){this.playing=false;cancelAnimationFrame(this.raf);this.btn.textContent="Play"}
+  stop(){this.pause();this.ro.disconnect()}
+}
+const playerHtml=(id,speed=true)=>`<div class="player" id="${id}"><canvas></canvas><div class="pctl"><button class="btn sm" data-pl="play" style="min-width:72px">Play</button><input type="range" min="0" step="10" value="0" aria-label="Replay position"><span class="time">00:00.0</span>${speed?`<select data-pl="speed" style="width:auto;min-height:38px"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select>`:""}</div></div>`;
+function drawAbsFrame(cv,frames,t,color,ar){sizeCanvasIfNeeded(cv,ar);const ctx=cv.getContext("2d");ctx.clearRect(0,0,cv.width,cv.height);const f=nearest(frames,t);if(f&&f.p)drawSkel(ctx,absPts(f.p,cv.width,cv.height),color,{width:Math.max(3,cv.width/150)});else{ctx.fillStyle="#93a3a3";ctx.font=(cv.width/28)+"px IBM Plex Sans, sans-serif";ctx.fillText("No person in view",cv.width*.05,cv.height*.1)}}
+function sizeCanvasIfNeeded(cv,ar){const w=Math.round((cv.clientWidth||640)*(window.devicePixelRatio||1));if(cv.width!==w){cv.width=w;cv.height=Math.round(w/ar)}cv.style.aspectRatio=String(ar)}
+
+/* Timeline (elements over the recording) */
+function tlHtml(id,dur,blocks,trim,marks){
+  return`<div class="tl" id="${id}" data-dur="${dur}">${blocks.map((b,i)=>`<div class="blk" data-i="${i}" style="left:${b.s/dur*100}%;width:${Math.max(.3,(b.e-b.s)/dur*100)}%;background:${b.c}${b.sel?";box-shadow:inset 0 0 0 3px #fff":""}">${b.l||""}</div>`).join("")}
+  ${trim?`<div class="out" style="left:0;width:${trim[0]/dur*100}%"></div><div class="out" style="left:${trim[1]/dur*100}%;right:0"></div>`:""}
+  ${(marks||[]).map(m=>`<div class="mk" style="left:${m/dur*100}%"></div>`).join("")}<div class="ph" style="left:0"></div></div>`;
+}
+function tlBind(id,onSeek){const el=$("#"+id);if(!el)return;el.addEventListener("click",e=>{const r=el.getBoundingClientRect();onSeek(clamp((e.clientX-r.left)/r.width,0,1)*+el.dataset.dur)})}
+function tlHead(id,t){const el=$("#"+id);if(!el)return;el.querySelector(".ph").style.left=clamp(t/+el.dataset.dur*100,0,100)+"%"}
+
+/* ===== Edit standard ===== */
+const E={rec:null,F:null,trim:[0,0],els:[],sel:0,level:"normal",t:0,base:null,fields:{},
+  init(rec,base){this.rec=rec;this.base=base;this.F=prep(rec.frames,rec.ar);this.t=0;this.sel=0;
+    const dur=rec.frames[rec.frames.length-1].t;
+    if(base){this.trim=[0,dur];this.els=base.elements.map(e=>({...e}));this.fields={name:base.name,area:base.area||"",expert:base.expert||"",rating:base.rating||100,allow:base.allow??15}}
+    else{this.trim=autoTrim(this.F);this.fields={name:"",area:"",expert:"",rating:100,allow:15};this.resplit()}},
+  resplit(useMarks){const[t0,t1]=this.trim;let bs;const mk=this.rec.marks.filter(m=>m>t0+300&&m<t1-300);
+    if(useMarks!==false&&mk.length)bs=[t0,...mk,t1];else bs=autoSplit(this.F,t0,t1,this.level);
+    this.els=[];for(let i=0;i<bs.length-1;i++)this.els.push({name:"Step "+(i+1),start:bs[i],end:bs[i+1],key:false});this.sel=0},
+  dur(){return this.rec.frames[this.rec.frames.length-1].t}
+};
+function vEdit(){const d=E.dur(),f=E.fields,el=E.els[E.sel]||E.els[0];
+  const blocks=E.els.map((e,i)=>({s:e.start,e:e.end,c:ELCOL[i%ELCOL.length],l:i+1,sel:i===E.sel}));
+  return`<div class="row"><button class="link" data-act="${E.base?"backStd":"home"}">← ${E.base?"Back without saving":"Discard"}</button></div>
+  <div><div class="eyebrow">${E.base?"Edit standard":"New standard"}</div><h1>Name the steps</h1><p class="lead">Play the recording, check where each step starts, and give it a name. The striped parts at the ends are cut off.</p></div>
+  <section class="panel">${playerHtml("ePlayer")}<div class="cur-el" id="eCur"></div>
+  <div class="tl-lbl">Steps · tap to jump</div>${tlHtml("eTl",d,blocks,E.trim,E.rec.marks)}
+  <div class="row"><button class="btn sm" data-act="trimS">Start here</button><button class="btn sm" data-act="trimE">End here</button><span class="note">Cycle time: <b class="num" id="eDur">${fmtS((E.trim[1]-E.trim[0])/1000)}</b></span></div></section>
+  <section class="panel"><div class="row between"><h2>Step ${E.sel+1} of ${E.els.length}</h2><span class="num note">${fmtClock(el.start-E.trim[0])} – ${fmtClock(el.end-E.trim[0])} · ${((el.end-el.start)/1000).toFixed(1)} s</span></div>
+  <div class="field"><label class="lbl" for="elName">Step name</label><input type="text" id="elName" value="${esc(el.name)}" data-input="elName" placeholder="e.g. Pick up bobbin"></div>
+  <label class="check"><input type="checkbox" id="elKey" data-change="elKey"${el.key?" checked":""}> Key point (quality-critical; flagged red if missed)</label>
+  <div class="row"><button class="btn sm" data-act="split">Split at play position</button><button class="btn sm" data-act="mergeNext"${E.sel>=E.els.length-1?" disabled":""}>Merge with next</button><button class="btn sm" data-act="mergePrev"${E.sel===0?" disabled":""}>Merge with previous</button></div>
+  <div class="row"><button class="btn sm" data-act="prevEl"${E.sel===0?" disabled":""}>← Previous step</button><button class="btn sm" data-act="nextEl"${E.sel>=E.els.length-1?" disabled":""}>Next step →</button></div></section>
+  <section class="panel"><h2>Automatic split</h2><div class="seg">${["fewer","normal","more"].map(k=>`<button class="${E.level===k?"on":""}" data-act="level" data-k="${k}">${k==="fewer"?"Fewer steps":k==="more"?"More steps":"Normal"}</button>`).join("")}</div>
+  <div class="row"><button class="btn sm" data-act="resplit">Split again automatically</button>${E.rec.marks.length?`<button class="btn sm" data-act="useMarks">Use my ${E.rec.marks.length} marks</button>`:""}</div><p class="note">Splitting again replaces the step names you typed.</p></section>
+  <section class="panel"><h2>Standard details</h2><div class="grid">
+  <div class="field" style="grid-column:1/-1"><label class="lbl" for="fName">Task name</label><input type="text" id="fName" value="${esc(f.name)}" data-input="fld" data-f="name" placeholder="e.g. Warp knotting, loom 12"></div>
+  <div class="field"><label class="lbl" for="fArea">Department / line</label><input type="text" id="fArea" value="${esc(f.area)}" data-input="fld" data-f="area"></div>
+  <div class="field"><label class="lbl" for="fExp">Expert name</label><input type="text" id="fExp" value="${esc(f.expert)}" data-input="fld" data-f="expert"></div>
+  <div class="field"><label class="lbl" for="fRat">Expert rating %</label><input type="number" id="fRat" value="${f.rating}" min="60" max="140" data-input="fld" data-f="rating"></div>
+  <div class="field"><label class="lbl" for="fAll">Allowance %</label><input type="number" id="fAll" value="${f.allow}" min="0" max="60" data-input="fld" data-f="allow"></div></div>
+  <button class="btn primary big" data-act="saveStd">Save standard</button></section>`;
+}
+function mountEdit(){const d=E.dur();
+  player=new Player($("#ePlayer"),d,(cv,t)=>drawAbsFrame(cv,E.rec.frames,t,t<E.trim[0]||t>E.trim[1]?"#5a6668":"#4db2ab",E.rec.ar),t=>{E.t=t;tlHead("eTl",t);const i=E.els.findIndex(e=>t>=e.start&&t<e.end);const c=$("#eCur");if(c)c.textContent=i>=0?(i+1)+". "+E.els[i].name:(t<E.trim[0]?"Before start (cut)":"After end (cut)")});
+  tlBind("eTl",t=>{player.pause();player.seek(t);const i=E.els.findIndex(e=>t>=e.start&&t<e.end);if(i>=0&&i!==E.sel){E.sel=i;rerenderEdit()}});
+  player.seek(E.t||E.trim[0]);
+}
+function rerenderEdit(){const t=E.t;stopPlayer();render();player.seek(t)}
+ACT.fld=(d,el)=>{E.fields[d.f]=el.type==="number"?+el.value:el.value};
+ACT.elName=(d,el)=>{E.els[E.sel].name=el.value;const c=$("#eCur");if(c)c.textContent=(E.sel+1)+". "+el.value};
+ACT.elKey=(d,el)=>{E.els[E.sel].key=el.checked};
+ACT.prevEl=()=>{E.sel=Math.max(0,E.sel-1);E.t=E.els[E.sel].start;rerenderEdit()};
+ACT.nextEl=()=>{E.sel=Math.min(E.els.length-1,E.sel+1);E.t=E.els[E.sel].start;rerenderEdit()};
+ACT.split=()=>{const t=E.t;const i=E.els.findIndex(e=>t>e.start+300&&t<e.end-300);if(i<0)return toast("Move the play position inside a step, at least 0.3 s from its ends.");
+  const e=E.els[i];E.els.splice(i+1,0,{name:"New step",start:t,end:e.end,key:false});e.end=t;E.sel=i+1;rerenderEdit()};
+ACT.mergeNext=()=>{const i=E.sel;if(i>=E.els.length-1)return;E.els[i].end=E.els[i+1].end;E.els[i].key=E.els[i].key||E.els[i+1].key;E.els.splice(i+1,1);rerenderEdit()};
+ACT.mergePrev=()=>{const i=E.sel;if(i<=0)return;E.els[i-1].end=E.els[i].end;E.els[i-1].key=E.els[i-1].key||E.els[i].key;E.els.splice(i,1);E.sel=i-1;rerenderEdit()};
+ACT.level=d=>{E.level=d.k;E.resplit(false);rerenderEdit()};
+ACT.resplit=()=>{E.resplit(false);rerenderEdit()};
+ACT.useMarks=()=>{E.resplit(true);rerenderEdit()};
+function setTrim(i){const t=E.t;const tr=E.trim.slice();tr[i]=t;if(tr[1]-tr[0]<1000)return toast("The cycle must be at least 1 second long.");E.trim=tr;
+  E.els=E.els.filter(e=>e.end>tr[0]+200&&e.start<tr[1]-200);if(!E.els.length)E.resplit(false);else{E.els[0].start=tr[0];E.els[E.els.length-1].end=tr[1];E.els.forEach(e=>{e.start=clamp(e.start,tr[0],tr[1]);e.end=clamp(e.end,tr[0],tr[1])})}
+  E.sel=Math.min(E.sel,E.els.length-1);rerenderEdit()}
+ACT.trimS=()=>setTrim(0);ACT.trimE=()=>setTrim(1);
+ACT.saveStd=async()=>{const f=E.fields;if(!f.name.trim()){toast("Give the task a name.");$("#fName").focus();return}
+  const[t0,t1]=E.trim;const frames=E.rec.frames.filter(x=>x.t>=t0&&x.t<=t1).map(x=>({t:x.t-t0,p:x.p}));
+  const els=E.els.map(e=>({...e,name:e.name.trim()||"Step",start:e.start-t0,end:e.end-t0,key:!!e.key}));
+  const now=Date.now();const s={createdBy:E.base?E.base.createdBy:S.user.name,updatedBy:S.user.name,jbs:E.base?E.base.jbs:undefined,id:E.base?E.base.id:uid(),name:f.name.trim(),area:f.area.trim(),expert:f.expert.trim(),rating:+f.rating||100,allow:+f.allow||0,ar:E.rec.ar,duration:frames[frames.length-1].t,elements:els,frames,created:E.base?E.base.created:now,updated:now};
+  try{await Store.put("standards",s)}catch(e){toast("Couldn't save the standard: "+(e.message||e));return}
+  await loadStds();S.cur=S.stds.find(x=>x.id===s.id)||s;S.attempts=(await Store.byStd(s.id)).sort((a,b)=>b.created-a.created);toast("Standard saved");go("std")};
+
+/* ===== Review attempt (trim + who) ===== */
+const RV={rec:null,std:null,trim:[0,0],t:0,op:"",opId:"",
+  init(rec,std){this.rec=rec;this.std=std;this.trim=autoTrim(prep(rec.frames,rec.ar));this.t=this.trim[0];try{this.op=localStorage.getItem("ms.op")||""}catch(e){}this.opId=""}};
+function vReview(){const d=RV.rec.frames[RV.rec.frames.length-1].t;
+  return`<div class="row"><button class="link" data-act="backStd">← Discard</button></div>
+  <div><div class="eyebrow">Employee check · ${esc(RV.std.name)}</div><h1>Check the recording</h1><p class="lead">Cut off anything before the task starts or after it ends, so only one cycle is compared.</p></div>
+  <section class="panel">${playerHtml("rPlayer")}${tlHtml("rTl",d,[{s:RV.trim[0],e:RV.trim[1],c:"var(--accent)",l:""}],RV.trim)}
+  <div class="row"><button class="btn sm" data-act="rTrimS">Start here</button><button class="btn sm" data-act="rTrimE">End here</button><span class="note">Cycle: <b class="num">${fmtS((RV.trim[1]-RV.trim[0])/1000)}</b> · expert ${fmtS(RV.std.duration/1000)}</span></div></section>
+  <section class="panel"><div class="grid"><div class="field"><label class="lbl" for="opName">Employee name</label><input type="text" id="opName" value="${esc(RV.op)}" data-input="rvF" data-f="op"></div>
+  <div class="field"><label class="lbl" for="opId">Employee ID</label><input type="text" id="opId" value="${esc(RV.opId)}" data-input="rvF" data-f="opId"></div></div>
+  <button class="btn primary big" data-act="analyze">Compare with standard</button></section>`;
+}
+function mountReview(){const d=RV.rec.frames[RV.rec.frames.length-1].t;
+  player=new Player($("#rPlayer"),d,(cv,t)=>drawAbsFrame(cv,RV.rec.frames,t,t<RV.trim[0]||t>RV.trim[1]?"#5a6668":"#e3a332",RV.rec.ar),t=>{RV.t=t;tlHead("rTl",t)});
+  tlBind("rTl",t=>{player.pause();player.seek(t)});player.seek(RV.t)}
+ACT.rvF=(d,el)=>{RV[d.f]=el.value};
+function rTrim(i){const tr=RV.trim.slice();tr[i]=RV.t;if(tr[1]-tr[0]<1000)return toast("The cycle must be at least 1 second long.");RV.trim=tr;const t=RV.t;stopPlayer();render();player.seek(t)}
+ACT.rTrimS=()=>rTrim(0);ACT.rTrimE=()=>rTrim(1);
+ACT.analyze=()=>{const[t0,t1]=RV.trim;const frames=RV.rec.frames.filter(x=>x.t>=t0&&x.t<=t1).map(x=>({t:x.t-t0,p:x.p}));
+  $("#busy").textContent="Analyzing…";$("#busy").hidden=false;
+  setTimeout(async()=>{try{const result=analyze(RV.std,{frames,ar:RV.rec.ar},S.sens);
+      try{localStorage.setItem("ms.op",RV.op)}catch(e){}
+      const a={checkedBy:S.user.name,id:uid(),stdId:RV.std.id,stdUpdated:RV.std.updated,operator:RV.op.trim(),opId:RV.opId.trim(),created:Date.now(),ar:RV.rec.ar,frames,result};
+      await Store.put("attempts",a);S.cur=RV.std;S.attempts=(await Store.byStd(RV.std.id)).sort((x,y)=>y.created-x.created);
+      Res.att=a;Res.std=RV.std;$("#busy").hidden=true;go("result")}
+    catch(e){$("#busy").hidden=true;toast(e.message||"Couldn't compare these recordings.")}},50)};
+
+/* ===== Result ===== */
+const Res={att:null,std:null,sel:-1,t:0};
+function vResult(){const a=Res.att,s=Res.std,r=a.result,sm=r.summary;
+  const perfC=sm.perf>=95?"var(--ok)":sm.perf>=80?"var(--slow)":"var(--miss)",matchC=sm.match>=75?"var(--ok)":sm.match>=55?"var(--slow)":"var(--miss)";
+  const scale=Math.max(sm.stdTotal,sm.actTotal);
+  const stdBlocks=r.elements.map((e,i)=>({s:e.sStart,e:e.sEnd,c:ELCOL[i%ELCOL.length],l:i+1}));
+  const actBlocks=r.elements.map((e,i)=>({s:e.aStart,e:e.aEnd,c:STATUS[e.status].c,l:i+1}));
+  let h=`<div class="row"><button class="link" data-act="backStd">← ${esc(s.name)}</button></div>
+  <div><div class="eyebrow">Employee check · ${fmtDate(a.created)}</div><h1>${esc(a.operator||"Employee")}${a.opId?" · "+esc(a.opId):""}</h1><p class="lead">${esc(s.name)} · compared with expert${s.expert?" "+esc(s.expert):""}${a.checkedBy?" · checked by "+esc(a.checkedBy):""}${a.stdUpdated&&a.stdUpdated!==s.updated?" (the standard has changed since this check)":""}</p></div>
+  <div class="stats"><div class="stat"><b class="num">${fmtS(sm.actTotal)}</b><span>cycle time (expert ${fmtS(sm.stdTotal)})</span></div>
+  <div class="stat"><b class="num" style="color:${perfC}">${sm.perf}%</b><span>performance vs standard pace</span></div>
+  <div class="stat"><b class="num" style="color:${matchC}">${sm.match}%</b><span>method match</span></div>
+  <div class="stat"><b class="num" style="color:${sm.missed?"var(--miss)":"var(--ok)"}">${sm.missed}</b><span>steps missed</span></div></div>`;
+  h+=`<section class="panel"><h2>Areas to improve</h2>`+(r.improvements.length?`<div class="imp">${r.improvements.map(x=>`<button class="imp-item" data-act="jump" data-k="${x.k}" style="--c:${STATUS[x.status]?STATUS[x.status].c:"var(--slow)"}"><span class="sev"></span><span class="t">${x.k+1}. ${esc(x.title)}</span><span class="lost">${x.lost>0.05?"+"+x.lost.toFixed(1)+" s":STATUS[x.status]?STATUS[x.status].l:""}</span><span class="d">${esc(x.detail)}</span></button>`).join("")}</div>`
+    :`<p class="note">No problems found. Every step matches the expert's method and pace within the limits.</p>`)+`</section>`;
+  h+=`<section class="panel"><h2>Side-by-side replay</h2><div class="legend"><span style="--c:var(--ghost)"><i class="dash"></i>Expert (standard)</span><span style="--c:var(--accent)"><i></i>This employee</span><span style="--c:var(--miss)"><i></i>Hand far from the expert's position</span></div>
+  ${playerHtml("xPlayer")}<div class="cur-el" id="xCur"></div><p class="note" id="xNote"></p>
+  <div class="tl-lbl">Expert</div>${tlHtml("xTlS",scale*1000,stdBlocks.map(b=>({...b,s:b.s*1000,e:b.e*1000})))}
+  <div class="tl-lbl">This employee · colour = result</div>${tlHtml("xTlA",scale*1000,actBlocks.map(b=>({...b,s:b.s*1000,e:b.e*1000})))}
+  <div class="legend">${Object.values(STATUS).map(x=>`<span class="st" style="--c:${x.c}">${x.l}</span>`).join("")}</div></section>`;
+  h+=`<section class="panel"><h2>Step by step</h2><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Step</th><th class="r">Expert</th><th class="r">Employee</th><th class="r">Diff</th><th class="r">Match</th><th>Result</th></tr></thead><tbody>
+  ${r.elements.map((e,i)=>`<tr class="click${i===Res.sel?" sel":""}" data-act="jump" data-k="${i}"><td class="num">${i+1}</td><td>${esc(e.name)}${e.key?" ★":""}</td><td class="r num">${e.stdT.toFixed(1)}</td><td class="r num">${e.actT.toFixed(1)}</td><td class="r num" style="color:${e.actT-e.stdT>0.5?"var(--slow)":"inherit"}">${(e.actT-e.stdT>=0?"+":"")+(e.actT-e.stdT).toFixed(1)}</td><td class="r num">${e.score}%</td><td><span class="st" style="--c:${STATUS[e.status].c}">${STATUS[e.status].l}</span></td></tr>`).join("")}
+  </tbody></table></div><p class="note">Times in seconds. ★ = key point. Performance uses the expert time × rating (${s.rating||100}%). Strictness: ${esc(sm.sens||"normal")}.</p>
+  <div class="row"><button class="btn sm" data-act="resCsv">Download CSV</button>${can("delete")?`<button class="btn sm danger" data-act="delAtt">Delete this check</button>`:""}</div></section>`;
+  return h;
+}
+function mountResult(){const a=Res.att,s=Res.std,r=a.result,durA=a.frames[a.frames.length-1].t;
+  const scale=Math.max(r.summary.stdTotal,r.summary.actTotal)*1000;
+  player=new Player($("#xPlayer"),durA,(cv,t)=>drawCompare(cv,t),t=>{
+    Res.t=t;tlHead("xTlA",t);const j=clamp(Math.round(t/1000*r.rate),0,r.amap.length-1);const ts=nearestStdT(r.amap[j]);tlHead("xTlS",ts);
+    const k=r.elements.findIndex(e=>t/1000>=e.aStart&&t/1000<e.aEnd);const c=$("#xCur"),n=$("#xNote");
+    if(k>=0){const e=r.elements[k];c.innerHTML=`${k+1}. ${esc(e.name)} <span class="st" style="--c:${STATUS[e.status].c};font-family:var(--f-body);text-transform:none">${STATUS[e.status].l}</span>`;n.textContent=e.notes.map(x=>x.text).join(" ")}});
+  function nearestStdT(i){const PSt=s.frames[0].t;const first=s.frames[0].t;return i/r.rate*1000+first}
+  function drawCompare(cv,t){sizeCanvasIfNeeded(cv,4/3);const ctx=cv.getContext("2d"),W=cv.width,H=cv.height;ctx.clearRect(0,0,W,H);
+    const j=clamp(Math.round(t/1000*r.rate),0,r.amap.length-1);const tS=nearestStdT(r.amap[j]);
+    const fs=nearest(s.frames,tS),fa=nearest(a.frames,t);const lw=Math.max(3,W/150);
+    let ps=null,pa=null;
+    if(fs&&fs.p){ps=relPts(fs.p,s.ar,W,H);drawSkel(ctx,ps,"#f2f5f4",{width:lw,dash:[lw*2.5,lw*2],alpha:.75,joints:false})}
+    if(fa&&fa.p){pa=relPts(fa.p,a.ar,W,H);drawSkel(ctx,pa,"#4db2ab",{width:lw})}
+    if(ps&&pa){const u=Math.min(H*.18,W*.3);for(const k of[K.lw,K.rw]){if(pa[k].v<.35||ps[k].v<.35)continue;const d=hyp(pa[k],ps[k])/u;if(d>.45){ctx.strokeStyle="#ff7b6b";ctx.lineWidth=lw;ctx.beginPath();ctx.arc(pa[k].x,pa[k].y,lw*5,0,7);ctx.stroke();ctx.setLineDash([lw,lw]);ctx.beginPath();ctx.moveTo(pa[k].x,pa[k].y);ctx.lineTo(ps[k].x,ps[k].y);ctx.stroke();ctx.setLineDash([])}}}
+    if(!pa){ctx.fillStyle="#93a3a3";ctx.font=(W/28)+"px IBM Plex Sans, sans-serif";ctx.fillText("Employee not in view",W*.05,H*.08)}
+    ctx.fillStyle="#93a3a3";ctx.font=(W/34)+"px IBM Plex Mono, monospace";ctx.fillText("Expert "+fmtClock(tS)+"   Employee "+fmtClock(t),W*.05,H*.96)}
+  tlBind("xTlA",t=>{player.pause();player.seek(t)});
+  tlBind("xTlS",ts=>{const i=Math.round(ts/1000*r.rate);let j=r.amap.findIndex(x=>x>=i);if(j<0)j=r.amap.length-1;player.pause();player.seek(j/r.rate*1000)});
+  player.seek(Res.sel>=0?r.elements[Res.sel].aStart*1000:0);
+}
+ACT.jump=d=>{const k=+d.k;Res.sel=k;const e=Res.att.result.elements[k];document.querySelectorAll("tr.click").forEach(tr=>tr.classList.toggle("sel",+tr.dataset.k===k));
+  if(player){player.pause();player.seek(e.aStart*1000);$("#xPlayer").scrollIntoView({behavior:"smooth",block:"center"})}};
+ACT.resCsv=()=>{const a=Res.att,r=a.result;const rows=[["checked_by",a.checkedBy||""],["employee",a.operator||""],["employee_id",a.opId||""],["date",fmtDate(a.created)],["standard",Res.std.name],["actual_s",r.summary.actTotal.toFixed(1)],["expert_s",r.summary.stdTotal.toFixed(1)],["performance_pct",r.summary.perf],["method_match_pct",r.summary.match],["missed_steps",r.summary.missed],[],
+  ["step","name","key_point","expert_s","employee_s","diff_s","match_pct","result","notes"],...r.elements.map((e,i)=>[i+1,e.name,e.key?"yes":"",e.stdT.toFixed(1),e.actT.toFixed(1),(e.actT-e.stdT).toFixed(1),e.score,STATUS[e.status].l,e.notes.map(x=>x.text).join(" ")]),[],
+  ["improvement","detail","time_lost_s"],...r.improvements.map(x=>[x.title,x.detail,x.lost.toFixed(1)])];
+  download("check-"+safeName(a.operator||"employee")+"-"+new Date(a.created).toISOString().slice(0,10)+".csv",toCsv(rows),"text/csv")};
+ACT.delAtt=async()=>{if(!confirm("Delete this employee check?"))return;await Store.del("attempts",Res.att.id,Res.att.stdId);S.attempts=S.attempts.filter(x=>x.id!==Res.att.id);go("std")};
+
+/* ===== Job Breakdown Sheet ===== */
+const KPT={safety:{l:"Safety",s:"S",c:"#ff7b6b"},quality:{l:"Quality",s:"Q",c:"#e3a332"},technique:{l:"Technique",s:"T",c:"#6aa2df"},cost:{l:"Cost",s:"C",c:"#3dbd83"}};
+const JB={timer:null,state:""};
+function jbsOf(s){if(!s.jbs)s.jbs={part:"",tools:"",ppe:"",docNo:"",rev:"",preparedBy:s.expert||"",approvedBy:"",date:new Date().toISOString().slice(0,10)};return s.jbs}
+const smvOf=s=>(s.duration/1000)*(s.rating||100)/100*(1+(s.allow||0)/100)/60;
+function vJbs(){const s=S.cur,j=jbsOf(s);
+  const f=(k,l,ph)=>`<div class="field"><label class="lbl" for="jh-${k}">${l}</label><input type="text" id="jh-${k}" value="${esc(j[k]||"")}" data-input="jbsH" data-f="${k}" placeholder="${esc(ph||"")}"></div>`;
+  let h=`<div class="row"><button class="link" data-act="backStd">← ${esc(s.name)}</button></div>
+  <div><div class="eyebrow">Job Breakdown Sheet</div><h1>${esc(s.name)}</h1><p class="lead">Steps and times come from the expert recording. Add the key points (how) and reasons (why) for each step, plus photos if useful. Changes save by themselves.</p></div>
+  <div class="row between"><div class="row"><button class="btn sm primary" data-act="jbsPdf">PDF</button><button class="btn sm" data-act="jbsXls">Excel</button></div><span class="savestate" id="jbsState">${esc(JB.state)}</span></div>
+  <section class="panel"><h2>Sheet header</h2><div class="grid">
+  ${f("part","Part / product","e.g. Denim 3/1 twill")}${f("tools","Tools & materials","e.g. Knotter, scissors")}${f("ppe","Safety equipment (PPE)","e.g. Gloves, ear plugs")}
+  ${f("docNo","Document no.","")}${f("rev","Revision","")}${f("date","Date","YYYY-MM-DD")}${f("preparedBy","Prepared by","")}${f("approvedBy","Approved by","")}</div>
+  <p class="note">Operation: <b>${esc(s.name)}</b> · Department: <b>${esc(s.area||"—")}</b> · Cycle time <b class="num">${fmtS(s.duration/1000)}</b> · SMV <b class="num">${smvOf(s).toFixed(2)}</b> min</p></section>`;
+  s.elements.forEach((e,i)=>{const kt=e.kpType||[];
+    h+=`<section class="panel jstep"><div class="row between"><h2>Step ${i+1}</h2><span class="num note">${((e.end-e.start)/1000).toFixed(1)} s</span></div>
+    <div class="field"><label class="lbl" for="js-n${i}">Important step (what is done)</label><input type="text" id="js-n${i}" value="${esc(e.name)}" data-input="jbsE" data-i="${i}" data-f="name"></div>
+    <div class="field"><span class="lbl">Key point type</span><div class="row">${Object.entries(KPT).map(([k,v])=>`<button class="kchip${kt.includes(k)?" on":""}" style="--c:${v.c}" data-act="kpType" data-i="${i}" data-k="${k}" aria-pressed="${kt.includes(k)}">${v.l}</button>`).join("")}</div></div>
+    <div class="field"><label class="lbl" for="js-k${i}">Key points (how to do it right)</label><textarea id="js-k${i}" data-input="jbsE" data-i="${i}" data-f="kp" placeholder="e.g. Hold the yarn end 5 cm from the knotter; check tension before closing">${esc(e.kp||"")}</textarea></div>
+    <div class="field"><label class="lbl" for="js-w${i}">Reasons (why)</label><textarea id="js-w${i}" data-input="jbsE" data-i="${i}" data-f="why" placeholder="e.g. Avoids loose knots that break in weaving">${esc(e.why||"")}</textarea></div>
+    ${e.photo?`<img class="ph" src="${e.photo}" alt="Photo for step ${i+1}"><div class="row"><button class="btn sm danger" data-act="jbsPhotoDel" data-i="${i}">Remove photo</button></div>`
+      :`<div class="row"><label class="btn sm" for="jp-c${i}">Take photo</label><input type="file" id="jp-c${i}" accept="image/*" capture="environment" data-change="jbsPhoto" data-i="${i}" hidden><label class="btn sm" for="jp-g${i}">Choose photo</label><input type="file" id="jp-g${i}" accept="image/*" data-change="jbsPhoto" data-i="${i}" hidden></div>`}
+    </section>`});
+  h+=`<div class="row"><button class="btn primary big" data-act="jbsPdf">Make PDF</button><button class="btn big" data-act="jbsXls">Make Excel</button></div>
+  <p class="note">Safety or Quality key points also mark the step as a key point, so it is flagged red if an employee misses it.</p>`;
+  return h;
+}
+function mountJbs(){if(!can("edit")){document.querySelectorAll("#app input,#app textarea").forEach(x=>x.disabled=true);document.querySelectorAll("#app .kchip,#app label.btn,#app [data-act=jbsPhotoDel]").forEach(x=>x.style.display="none")}document.querySelectorAll(".jstep textarea").forEach(t=>{t.style.height="auto";t.style.height=(t.scrollHeight+2)+"px"})}
+function jbsMark(){JB.state="Saving…";const el=$("#jbsState");if(el)el.textContent=JB.state;clearTimeout(JB.timer);JB.timer=setTimeout(jbsFlush,700)}
+async function jbsFlush(){if(!JB.timer)return;clearTimeout(JB.timer);JB.timer=null;
+  try{const{factory,...x}=S.cur;x.jbsUpdated=Date.now();await Store.put("standards",x);JB.state="Saved ✓"}catch(e){JB.state="Couldn't save"}
+  const el=$("#jbsState");if(el)el.textContent=JB.state}
+ACT.openJbs=()=>{JB.state="";go("jbs")};
+ACT.jbsH=(d,el)=>{jbsOf(S.cur)[d.f]=el.value;jbsMark()};
+ACT.jbsE=(d,el)=>{const e=S.cur.elements[+d.i];e[d.f]=el.value;if(el.tagName==="TEXTAREA"){el.style.height="auto";el.style.height=(el.scrollHeight+2)+"px"}jbsMark()};
+ACT.kpType=(d,b)=>{const e=S.cur.elements[+d.i];const kt=new Set(e.kpType||[]);kt.has(d.k)?kt.delete(d.k):kt.add(d.k);e.kpType=[...kt];
+  if(kt.has("safety")||kt.has("quality"))e.key=true;b.classList.toggle("on",kt.has(d.k));b.setAttribute("aria-pressed",String(kt.has(d.k)));jbsMark()};
+ACT.jbsPhoto=(d,el)=>{const file=el.files&&el.files[0];if(!file)return;const fr=new FileReader();fr.onload=()=>{const img=new Image();img.onload=()=>{
+    const m=900,r=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);S.cur.elements[+d.i].photo=c.toDataURL("image/jpeg",0.72);jbsMark();const y=window.scrollY;render();window.scrollTo(0,y)};
+    img.onerror=()=>toast("Couldn't read that photo.");img.src=fr.result};fr.readAsDataURL(file)};
+ACT.jbsPhotoDel=d=>{delete S.cur.elements[+d.i].photo;jbsMark();const y=window.scrollY;render();window.scrollTo(0,y)};
+
+const JCSS=`.jp{width:1123px;height:794px;background:#fff;color:#111;font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;line-height:1.35;padding:26px 30px 34px;box-sizing:border-box;position:relative;overflow:hidden}
+.jp h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:26px;line-height:1;margin:0 0 8px;letter-spacing:.03em;text-transform:uppercase;color:#111}
+.jp h1 small{font-size:15px;color:#555;margin-left:8px}
+.jp .hd{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #333;border-left:1px solid #333;margin-bottom:10px}
+.jp .hd div{border-right:1px solid #333;border-bottom:1px solid #333;padding:4px 6px;min-height:30px}
+.jp .hd b{display:block;font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:#555;font-weight:600}
+.jp table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed;border-top:1px solid #333;border-left:1px solid #333}
+.jp .tw{border-bottom:1px solid #333;padding-bottom:0}
+.jp tbody tr:last-child td{border-bottom:0}
+.jp th{background:#dfeceb;border-right:1px solid #333;border-bottom:1px solid #333;padding:5px;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;text-align:left}
+.jp td{border-right:1px solid #333;border-bottom:1px solid #333;padding:5px;vertical-align:top;white-space:pre-wrap;overflow-wrap:anywhere}
+.jp td.n,.jp td.t{text-align:center;font-family:"IBM Plex Mono",monospace}
+.jp .tag{display:inline-block;font-size:8.5px;font-weight:700;border-radius:3px;padding:0 4px;color:#fff;margin:0 3px 3px 0;white-space:nowrap}
+.jp img{max-width:100%;max-height:96px;display:block;margin:auto}
+.jp .sg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:40px;margin-top:22px;font-size:10px}
+.jp .sg div{border-top:1px solid #333;padding-top:4px}
+.jp .ft{position:absolute;left:30px;right:30px;bottom:12px;display:flex;justify-content:space-between;font-size:9px;color:#555}`;
+function jbsHeadHtml(s,j,first){
+  if(!first)return`<h1>Job Breakdown Sheet<small>${esc(s.name)} (continued)</small></h1>`;
+  const c=(l,v)=>`<div><b>${l}</b>${esc(v||"")}</div>`;
+  return`<h1>Job Breakdown Sheet</h1><div class="hd">${c("Operation",s.name)}${c("Department / line",s.area)}${c("Part / product",j.part)}${c("Tools & materials",j.tools)}
+  ${c("Safety equipment (PPE)",j.ppe)}${c("Cycle time / SMV",fmtS(s.duration/1000)+" / "+smvOf(s).toFixed(2)+" min")}${c("Document no. / Rev.",[j.docNo,j.rev].filter(Boolean).join(" / "))}${c("Date",j.date)}</div>`}
+function jbsRowHtml(e,i){const tags=(e.kpType||[]).map(k=>`<span class="tag" style="background:${KPT[k].c}">${KPT[k].l}</span>`).join("");
+  return`<tr><td class="n">${i+1}</td><td><b>${esc(e.name)}</b></td><td>${tags?tags+"<br>":""}${esc(e.kp||"")}</td><td>${esc(e.why||"")}</td><td class="t">${((e.end-e.start)/1000).toFixed(1)}</td><td>${e.photo?`<img src="${e.photo}">`:""}</td></tr>`}
+const JTHEAD=`<thead><tr><th style="width:34px">No.</th><th style="width:200px">Important step<br>(what)</th><th>Key points<br>(how)</th><th style="width:250px">Reasons<br>(why)</th><th style="width:54px">Time s</th><th style="width:130px">Photo</th></tr></thead>`;
+async function buildJbsPages(){
+  const s=S.cur,j=jbsOf(s);const host=document.createElement("div");host.style.cssText="position:fixed;left:-20000px;top:0;z-index:-1";
+  host.innerHTML=`<style>${JCSS}</style>`;document.body.appendChild(host);
+  const pages=[];const newPage=first=>{const p=document.createElement("div");p.className="jp";p.innerHTML=jbsHeadHtml(s,j,first)+`<div class="tw"><table>${JTHEAD}<tbody></tbody></table></div>`;host.appendChild(p);pages.push(p);return p};
+  let p=newPage(true);const LIM=794-34;
+  // height actually used by the content (the page box itself is fixed at A4 height)
+  const used=pg=>{let m=0;for(const c of pg.children){if(c.tagName==="STYLE"||c.classList.contains("ft"))continue;m=Math.max(m,c.offsetTop+c.offsetHeight)}return m};
+  const imgs=[];
+  for(let i=0;i<s.elements.length;i++){const tb=p.querySelector("tbody");tb.insertAdjacentHTML("beforeend",jbsRowHtml(s.elements[i],i));
+    const im=tb.lastElementChild.querySelector("img");if(im&&!im.complete)await new Promise(r=>{im.onload=im.onerror=r});
+    if(used(p)>LIM&&tb.children.length>1){tb.lastElementChild.remove();p=newPage(false);i--}}
+  const sig=`<div class="sg"><div>Prepared by: ${esc(j.preparedBy||"")}</div><div>Approved by: ${esc(j.approvedBy||"")}</div><div>Key point types: ${Object.values(KPT).map(v=>v.l).join(", ")}</div></div>`;
+  p.insertAdjacentHTML("beforeend",sig);if(used(p)>LIM){p.lastElementChild.remove();p=newPage(false);p.querySelector(".tw").remove();p.insertAdjacentHTML("beforeend",sig)}
+  pages.forEach((pg,k)=>pg.insertAdjacentHTML("beforeend",`<div class="ft"><span>Motion Study · ${esc(s.name)}</span><span>Page ${k+1} of ${pages.length}</span></div>`));
+  return{host,pages}}
+ACT.jbsPdf=async()=>{await jbsFlush();const b=$("#busy");b.textContent="Making PDF…";b.hidden=false;let host=null;
+  try{await Promise.all([loadLib("jspdf"),loadLib("html2canvas")]);try{await document.fonts.ready}catch(e){}
+    const r=await buildJbsPages();host=r.host;const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+    for(let k=0;k<r.pages.length;k++){const c=await window.html2canvas(r.pages[k],{scale:2,backgroundColor:"#ffffff",logging:false});if(k)pdf.addPage();pdf.addImage(c.toDataURL("image/jpeg",0.9),"JPEG",0,0,297,210)}
+    b.hidden=true;await shareBinary("JBS-"+safeName(S.cur.name)+".pdf",pdf.output("datauristring").split(",")[1],"application/pdf")}
+  catch(e){b.hidden=true;toast("Couldn't make the PDF: "+(e.message||e))}finally{if(host)host.remove()}};
+ACT.jbsXls=async()=>{await jbsFlush();const b=$("#busy");b.textContent="Making Excel…";b.hidden=false;
+  try{await loadLib("exceljs");const s=S.cur,j=jbsOf(s),X=window.ExcelJS;const wb=new X.Workbook();wb.creator="Motion Study";
+    const ws=wb.addWorksheet("Job Breakdown Sheet",{pageSetup:{paperSize:9,orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}}});
+    ws.columns=[{width:6},{width:30},{width:14},{width:48},{width:36},{width:9},{width:22}];
+    const thin={style:"thin",color:{argb:"FF333333"}},box={top:thin,left:thin,bottom:thin,right:thin};
+    ws.mergeCells("A1:G1");const t=ws.getCell("A1");t.value="JOB BREAKDOWN SHEET";t.font={bold:true,size:16};ws.getRow(1).height=26;
+    const hd=[["Operation",s.name,"Department / line",s.area],["Part / product",j.part,"Tools & materials",j.tools],["Safety equipment (PPE)",j.ppe,"Cycle time / SMV",fmtS(s.duration/1000)+" / "+smvOf(s).toFixed(2)+" min"],["Document no. / Rev.",[j.docNo,j.rev].filter(Boolean).join(" / "),"Date",j.date]];
+    hd.forEach((r,k)=>{const n=k+2;ws.mergeCells(`A${n}:B${n}`);ws.mergeCells(`C${n}:D${n}`);ws.mergeCells(`F${n}:G${n}`);
+      ws.getCell(`A${n}`).value=r[0];ws.getCell(`C${n}`).value=r[1]||"";ws.getCell(`E${n}`).value=r[2];ws.getCell(`F${n}`).value=r[3]||"";
+      for(const c of["A","E"])ws.getCell(c+n).font={bold:true,size:9,color:{argb:"FF555555"}};for(const c of["A","B","C","D","E","F","G"])ws.getCell(c+n).border=box});
+    const H=7;const hr=ws.getRow(H);hr.values=["No.","Important step (what)","Key point type","Key points (how)","Reasons (why)","Time s","Photo"];hr.height=30;
+    hr.eachCell(c=>{c.font={bold:true};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFDFECEB"}};c.border=box;c.alignment={vertical:"middle",wrapText:true}});
+    s.elements.forEach((e,i)=>{const n=H+1+i,r=ws.getRow(n);r.values=[i+1,e.name,(e.kpType||[]).map(k=>KPT[k].l).join(", "),e.kp||"",e.why||"",+((e.end-e.start)/1000).toFixed(1),""];
+      const lines=Math.max(2,...[e.kp||"",e.why||"",e.name].map(x=>Math.ceil(String(x).length/40)+String(x).split("\n").length-1));
+      r.height=Math.max(e.photo?78:18,lines*15);r.eachCell({includeEmpty:true},c=>{c.border=box;c.alignment={vertical:"top",wrapText:true}});
+      r.getCell(1).alignment={vertical:"top",horizontal:"center"};
+      if(e.photo){const id=wb.addImage({base64:e.photo,extension:"jpeg"});ws.addImage(id,{tl:{col:6.05,row:n-1+0.05},ext:{width:140,height:96}});if(r.height<76)r.height=76}});
+    const end=H+s.elements.length+2;ws.getCell(`B${end}`).value="Prepared by: "+(j.preparedBy||"");ws.getCell(`D${end}`).value="Approved by: "+(j.approvedBy||"");
+    ws.getCell(`B${end}`).border={top:thin};ws.getCell(`D${end}`).border={top:thin};
+    ws.views=[{state:"frozen",ySplit:H}];
+    const buf=await wb.xlsx.writeBuffer();b.hidden=true;
+    await shareBinary("JBS-"+safeName(s.name)+".xlsx",abToB64(buf),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
+  catch(e){b.hidden=true;toast("Couldn't make the Excel file: "+(e.message||e))}};
+
+/* ===== Users and login ===== */
+// Accounts are kept on this phone (file motionstudy/users.json in the app, localStorage in a browser).
+// Passwords are stored only as salted PBKDF2 hashes.
+const ROLES={admin:{l:"Admin",d:"Everything, including users and deleting standards"},engineer:{l:"Engineer",d:"Record and edit standards, job breakdown sheets, checks, backups"},checker:{l:"Checker",d:"Check employees and view standards only"}};
+const Users={list:[],
+  async load(){try{if(FS){const r=await FS.readFile({path:"motionstudy/users.json",directory:"DATA",encoding:"utf8"});this.list=JSON.parse(r.data).users||[]}else this.list=JSON.parse(localStorage.getItem("ms.users")||"{}").users||[]}catch(e){this.list=[]}},
+  async save(){const data=JSON.stringify({users:this.list});if(FS)await FS.writeFile({path:"motionstudy/users.json",data,directory:"DATA",encoding:"utf8",recursive:true});else localStorage.setItem("ms.users",data)},
+  find(uid){uid=String(uid||"").trim().toLowerCase();return this.list.find(u=>u.uid===uid)}
+};
+const hex=b=>[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");
+async function hashPw(pw,saltHex){const salt=saltHex?new Uint8Array(saltHex.match(/../g).map(h=>parseInt(h,16))):crypto.getRandomValues(new Uint8Array(16));
+  const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveBits"]);
+  const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:120000,hash:"SHA-256"},key,256);return{salt:hex(salt),hash:hex(bits)}}
+async function checkPw(u,pw){const h=await hashPw(pw,u.salt);return h.hash===u.hash}
+const can=what=>{const r=S.user&&S.user.role;if(r==="admin")return true;if(r==="engineer")return what!=="users"&&what!=="delete";if(r==="checker")return what==="check";return false};
+const L={err:"",busy:false};
+function vLogin(){const first=!Users.list.length;
+  return`<section class="panel login"><div><div class="eyebrow">${first?"First start":"Sign in"}</div><h1>${first?"Create the admin account":"Motion Study"}</h1>
+  <p class="lead">${first?"This account manages users on this phone. Choose a password you will remember; it cannot be recovered.":"Enter your user ID and password."}</p></div>
+  ${first?`<div class="field"><label class="lbl" for="lgName">Full name</label><input type="text" id="lgName" autocomplete="name"></div>`:""}
+  <div class="field"><label class="lbl" for="lgId">User ID</label><input type="text" id="lgId" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="${first?"e.g. riyadh":""}"></div>
+  <div class="field"><label class="lbl" for="lgPw">Password</label><input type="password" id="lgPw" autocomplete="${first?"new-password":"current-password"}" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>
+  ${first?`<div class="field"><label class="lbl" for="lgPw2">Repeat password</label><input type="password" id="lgPw2" autocomplete="new-password" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>`
+   :`<label class="check"><input type="checkbox" id="lgStay"> Stay signed in on this phone</label>`}
+  <p class="note" id="lgErr" style="color:var(--miss)">${esc(L.err)}</p>
+  <button class="btn primary big" data-act="${first?"createAdmin":"login"}">${first?"Create account":"Sign in"}</button>
+  ${NATIVE?`<button class="btn" data-act="exitAsk">Exit app</button>`:""}</section>`}
+function lgErr(m){L.err=m;const e=$("#lgErr");if(e)e.textContent=m}
+ACT.createAdmin=async()=>{const name=$("#lgName").value.trim(),uid=$("#lgId").value.trim().toLowerCase(),pw=$("#lgPw").value,pw2=$("#lgPw2").value;
+  if(!name||!uid)return lgErr("Enter your name and a user ID.");if(!/^[a-z0-9._-]{3,30}$/.test(uid))return lgErr("User ID: 3–30 letters, numbers, dot, dash or underscore. No spaces.");
+  if(pw.length<6)return lgErr("Password must be at least 6 characters.");if(pw!==pw2)return lgErr("The two passwords are different.");
+  const h=await hashPw(pw);const u={id:uid,uid,name,role:"admin",active:true,salt:h.salt,hash:h.hash,created:Date.now()};Users.list.push(u);
+  try{await Users.save()}catch(e){Users.list=[];return lgErr("Couldn't save the account: "+(e.message||e))}
+  signIn(u,false);toast("Admin account created. Welcome, "+name+".")};
+ACT.login=async()=>{const uid=$("#lgId").value,pw=$("#lgPw").value,stay=$("#lgStay").checked;const u=Users.find(uid);
+  if(!u||!(await checkPw(u,pw)))return lgErr("User ID or password is wrong.");if(u.active===false)return lgErr("This account is switched off. Ask the admin.");
+  signIn(u,stay)};
+function signIn(u,stay){S.user={id:u.id,name:u.name,role:u.role};L.err="";try{stay?localStorage.setItem("ms.session",u.id):localStorage.removeItem("ms.session")}catch(e){}renderUserbar();go("library")}
+ACT.logout=async()=>{closeMenu();if(S.view==="jbs")await jbsFlush();if(S.view==="record")stopRecordView();S.user=null;try{localStorage.removeItem("ms.session")}catch(e){}renderUserbar();S.view="login";render()};
+function renderUserbar(){const b=$("#userbar");if(!b)return;b.innerHTML=S.user?`<button class="uchip" data-act="openMenu" aria-haspopup="menu">${esc(S.user.name)} <i>${ROLES[S.user.role].l}</i> ☰</button>`:`<div class="privacy">Video stays on this phone. Only body-point coordinates are saved.</div>`}
+ACT.openMenu=()=>{const m=$("#menu");m.innerHTML=`<div class="box" role="menu"><div class="who">Signed in as <b>${esc(S.user.name)}</b> (${ROLES[S.user.role].l})</div>
+  <button role="menuitem" data-act="menuGo" data-v="library">Standards</button>
+  ${can("users")?`<button role="menuitem" data-act="menuGo" data-v="users">Users</button>`:""}
+  <button role="menuitem" data-act="menuGo" data-v="password">Change password</button>
+  <button role="menuitem" data-act="logout">Log out</button>
+  ${NATIVE?`<button role="menuitem" data-act="exitAsk" style="color:var(--miss)">Exit app</button>`:""}</div>`;m.hidden=false};
+function closeMenu(){const m=$("#menu");if(m)m.hidden=true}
+document.addEventListener("click",e=>{const m=$("#menu");if(m&&!m.hidden&&e.target===m)closeMenu()});
+ACT.menuGo=d=>{closeMenu();go(d.v)};
+ACT.exitAsk=()=>{closeMenu();const m=$("#modal");m.innerHTML=`<div class="box" role="dialog" aria-labelledby="exT"><h2 id="exT">Exit Motion Study?</h2><p class="note">Your standards and checks are saved on this phone.</p>
+  <div class="row"><button class="btn primary" data-act="exitApp" style="flex:1">Exit</button><button class="btn" data-act="exitCancel" style="flex:1">Cancel</button></div></div>`;m.hidden=false};
+ACT.exitCancel=()=>{$("#modal").hidden=true};
+ACT.exitApp=async()=>{$("#modal").hidden=true;try{if(S.view==="jbs")await jbsFlush();if(S.view==="record")stopRecordView()}catch(e){}
+  try{if(!localStorage.getItem("ms.session")){S.user=null}}catch(e){}
+  if(NP.App&&NP.App.exitApp)NP.App.exitApp();else toast("Close the app from the phone's recent apps screen.")};
+// Users screen (admin)
+const UF={id:"",name:"",uid:"",role:"engineer",pw:""};
+function vUsers(){if(!can("users"))return`<p class="note">Only the admin can manage users.</p>`;
+  return`<div class="row"><button class="link" data-act="home">← Standards</button></div><div><h1>Users</h1><p class="lead">People who can sign in on this phone. Give each person their own user ID so the app records who made each standard and check.</p></div>
+  <section class="panel"><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>User ID</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>
+  ${Users.list.map(u=>`<tr><td>${esc(u.name)}</td><td class="num">${esc(u.uid)}</td><td><span class="role ${u.role==="admin"?"admin":""}">${ROLES[u.role].l}</span></td><td>${u.active===false?"Off":"Active"}</td>
+   <td><div class="row"><button class="link" data-act="uEdit" data-id="${esc(u.id)}">Edit</button>${u.id!==S.user.id?`<button class="link" data-act="uToggle" data-id="${esc(u.id)}">${u.active===false?"Switch on":"Switch off"}</button>`:""}</div></td></tr>`).join("")}
+  </tbody></table></div></section>
+  <section class="panel"><h2>${UF.id?"Edit user":"Add a user"}</h2><div class="grid">
+  <div class="field"><label class="lbl" for="ufName">Full name</label><input type="text" id="ufName" value="${esc(UF.name)}" data-input="uf" data-f="name"></div>
+  <div class="field"><label class="lbl" for="ufUid">User ID</label><input type="text" id="ufUid" value="${esc(UF.uid)}" data-input="uf" data-f="uid" autocapitalize="none" spellcheck="false"${UF.id?" disabled":""}></div>
+  <div class="field"><label class="lbl" for="ufRole">Role</label><select id="ufRole" data-change="ufRole">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}"${UF.role===k?" selected":""}>${v.l}</option>`).join("")}</select></div>
+  <div class="field"><label class="lbl" for="ufPw">${UF.id?"New password (leave empty to keep)":"Password"}</label><input type="text" id="ufPw" value="${esc(UF.pw)}" data-input="uf" data-f="pw" autocomplete="off"></div></div>
+  <p class="note">${Object.values(ROLES).map(r=>"<b>"+r.l+"</b>: "+r.d).join(" · ")}</p>
+  <div class="row"><button class="btn primary" data-act="uSave">${UF.id?"Save changes":"Add user"}</button>${UF.id?`<button class="btn" data-act="uClear">Cancel</button>`:""}</div></section>
+  <p class="note">Tell each person their user ID and password. They can change the password from the menu. If someone forgets theirs, edit the user here and set a new one. Keep at least two admin accounts so the phone is never locked out.</p>`}
+ACT.uf=(d,el)=>{UF[d.f]=el.value};ACT.ufRole=(d,el)=>{UF.role=el.value};
+ACT.uEdit=d=>{const u=Users.list.find(x=>x.id===d.id);Object.assign(UF,{id:u.id,name:u.name,uid:u.uid,role:u.role,pw:""});render()};
+ACT.uClear=()=>{Object.assign(UF,{id:"",name:"",uid:"",role:"engineer",pw:""});render()};
+ACT.uToggle=async d=>{const u=Users.list.find(x=>x.id===d.id);u.active=u.active===false;await Users.save();render()};
+ACT.uSave=async()=>{const name=UF.name.trim(),uid=UF.uid.trim().toLowerCase();
+  if(!name)return toast("Enter the person's name.");
+  if(UF.id){const u=Users.list.find(x=>x.id===UF.id);
+    if(u.role==="admin"&&UF.role!=="admin"&&Users.list.filter(x=>x.role==="admin"&&x.active!==false).length<2)return toast("Keep at least one active admin.");
+    u.name=name;u.role=UF.role;if(UF.pw){if(UF.pw.length<6)return toast("Password must be at least 6 characters.");const h=await hashPw(UF.pw);u.salt=h.salt;u.hash=h.hash}
+    if(u.id===S.user.id){S.user.name=u.name;S.user.role=u.role;renderUserbar()}}
+  else{if(!/^[a-z0-9._-]{3,30}$/.test(uid))return toast("User ID: 3–30 letters, numbers, dot, dash or underscore.");if(Users.find(uid))return toast("That user ID is already taken.");
+    if(UF.pw.length<6)return toast("Password must be at least 6 characters.");const h=await hashPw(UF.pw);
+    Users.list.push({id:uid,uid,name,role:UF.role,active:true,salt:h.salt,hash:h.hash,created:Date.now()})}
+  try{await Users.save()}catch(e){return toast("Couldn't save: "+(e.message||e))}toast(UF.id?"Saved":"User added");ACT.uClear()};
+// Change own password
+function vPassword(){return`<div class="row"><button class="link" data-act="home">← Standards</button></div><section class="panel login"><h1>Change password</h1>
+  <div class="field"><label class="lbl" for="cpOld">Current password</label><input type="password" id="cpOld" autocomplete="current-password" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>
+  <div class="field"><label class="lbl" for="cpNew">New password</label><input type="password" id="cpNew" autocomplete="new-password" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>
+  <div class="field"><label class="lbl" for="cpNew2">Repeat new password</label><input type="password" id="cpNew2" autocomplete="new-password" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>
+  <button class="btn primary big" data-act="cpSave">Change password</button></section>`}
+ACT.cpSave=async()=>{const u=Users.list.find(x=>x.id===S.user.id);const o=$("#cpOld").value,n=$("#cpNew").value,n2=$("#cpNew2").value;
+  if(!u||!(await checkPw(u,o)))return toast("The current password is wrong.");if(n.length<6)return toast("New password must be at least 6 characters.");if(n!==n2)return toast("The new passwords are different.");
+  const h=await hashPw(n);u.salt=h.salt;u.hash=h.hash;await Users.save();toast("Password changed");go("library")};
+// Android back button
+function backTarget(){const v=S.view;
+  if(v==="std"||v==="users"||v==="password")return"library";
+  if(v==="jbs"||v==="review"||v==="result")return"std";
+  if(v==="record")return R.mode==="attempt"?"std":"library";
+  if(v==="edit")return E.base?"std":"library";
+  return null}
+function onBack(){if(!$("#modal").hidden){$("#modal").hidden=true;return}if(!$("#menu").hidden){closeMenu();return}
+  if(!S.user||S.view==="library"||S.view==="login"){ACT.exitAsk();return}
+  const t=backTarget();if(t)go(t);else ACT.exitAsk()}
+
+/* ===== Boot ===== */
+(async()=>{
+  app.innerHTML=`<section class="panel"><p class="note">Loading…</p></section>`;
+  await Store.open();await Store.migrate();
+  try{if(!NATIVE&&navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+  try{const r=await fetch("standards.json",{cache:"no-store"});if(r.ok){const j=await r.json();(j.standards||[]).forEach(s=>{if(s&&s.id&&Array.isArray(s.frames))S.factory.set(s.id,s)})}}catch(e){}
+  await Users.load();
+  let sid=null;try{sid=localStorage.getItem("ms.session")}catch(e){}
+  const su=sid&&Users.list.find(u=>u.id===sid&&u.active!==false);
+  if(su)S.user={id:su.id,name:su.name,role:su.role};
+  S.view=S.user?"library":"login";renderUserbar();
+  if(NATIVE&&NP.App&&NP.App.addListener)try{NP.App.addListener("backButton",onBack)}catch(e){}
+  await loadStds();render();
+  Pose.load().catch(()=>{});
+})();
+</script>
+</body>
+</html>
