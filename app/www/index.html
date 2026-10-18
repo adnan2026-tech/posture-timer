@@ -11,143 +11,230 @@
 <link rel="stylesheet" href="fonts/fonts.css" onerror="this.remove()">
 <style>
 /* Layout: phone-first single column (max 760px). Camera screens put the video stage first; analysis screens lead with a summary, then the ranked improvement list, then replay and detail. Single dark theme by design (shop-floor camera tool). */
+/* Layout: phone-first app shell. Sticky top bar (brand + user menu), one content column (max 760px).
+   A standard opens with a header and a tab strip (Overview · Video · Job breakdown · Visual instruction).
+   Camera and replay surfaces stay dark; everything else is light and high-contrast for factory lighting. */
 :root{
-  --bg:#0d1214; --panel:#161e21; --panel-2:#1d272a; --ink:#e7eeec; --muted:#93a3a3; --line:#2a3639;
-  --accent:#4db2ab; --accent-ink:#071211;
-  --ok:#3dbd83; --slow:#e3a332; --method:#d27fd9; --miss:#ff7b6b; --fast:#6aa2df; --ghost:#f2f5f4;
-  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;
-  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --bg:#edf1ee; --panel:#ffffff; --panel-2:#f2f5f3; --ink:#14221f; --muted:#56655f; --line:#d5ded9;
+  --accent:#0d7a71; --accent-dk:#095e57; --accent-ink:#ffffff; --accent-soft:#dcefeb;
+  --ok:#178a4a; --slow:#b9650a; --method:#a33aa0; --miss:#d1352a; --fast:#2d6cd1; --ghost:#f2f5f4;
+  --dark:#0f1716; --dark-ink:#e8eeec;
+  --abh:57px;
+  --shadow:0 1px 2px rgba(18,40,35,.06),0 6px 18px rgba(18,40,35,.06);
+  --f-display:"Barlow Condensed","Noto Sans Bengali","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Noto Sans Bengali",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
-  color-scheme:dark;
+  color-scheme:light;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 .wrap>*,.panel>*{min-width:0;max-width:100%}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45}
-body{padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.45;-webkit-tap-highlight-color:transparent}
+body{padding-bottom:env(safe-area-inset-bottom,0px)}
 button,input,select,textarea{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.wrap{max-width:760px;margin:0 auto;padding-inline:14px;padding-block:12px 40px;display:flex;flex-direction:column;gap:12px}
-.top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.brand{text-align:left;font-family:var(--f-display);font-weight:700;font-size:26px;text-transform:uppercase;letter-spacing:.02em;line-height:1;cursor:pointer;background:none;border:0;padding:0}
-.brand small{display:block;font-family:var(--f-body);font-weight:500;font-size:11px;letter-spacing:.08em;color:var(--muted);margin-top:3px}
-.privacy{font-size:12px;color:var(--accent);font-weight:600;max-width:30ch;text-align:right}
-h1{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1.05;text-transform:uppercase;margin:0;text-wrap:balance}
-h2{font-family:var(--f-display);font-weight:600;font-size:19px;text-transform:uppercase;letter-spacing:.04em;margin:0}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.lg{width:40px;height:40px;stroke-width:1.6;color:var(--muted)}
+
+/* top bar */
+.appbar{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.appbar-in{max-width:760px;margin:0 auto;padding:8px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.brand{display:flex;align-items:center;gap:10px;text-align:left;background:none;border:0;padding:0;cursor:pointer}
+.brand .logo{width:36px;height:36px;border-radius:10px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.brand .logo svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.brand b{display:block;font-family:var(--f-display);font-weight:700;font-size:22px;letter-spacing:.02em;text-transform:uppercase;line-height:1}
+.brand small{display:block;font-size:11px;color:var(--muted);letter-spacing:.04em;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:42vw}
+.brand>span:last-child{min-width:0}
+.userbar{display:flex;align-items:center;gap:6px;min-width:0;flex:none;max-width:50%}
+.brand{min-width:0;flex:1 1 auto}
+@media (max-width:440px){.uchip i{display:none}}
+.uchip{display:inline-flex;align-items:center;gap:6px;min-height:40px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);font-weight:600;font-size:13px;cursor:pointer;max-width:100%;min-width:0}
+.uchip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.uchip i{font-style:normal;color:var(--muted);font-weight:500}
+
+.wrap{max-width:760px;margin:0 auto;padding-inline:14px;padding-block:14px 48px;display:flex;flex-direction:column;gap:12px}
+h1{font-family:var(--f-display);font-weight:700;font-size:30px;line-height:1.05;text-transform:uppercase;margin:0;text-wrap:balance;letter-spacing:.01em}
+h2{font-family:var(--f-display);font-weight:700;font-size:20px;text-transform:uppercase;letter-spacing:.03em;margin:0;line-height:1.1}
+h2 .of{color:var(--muted);font-weight:600}
 h3{font-size:15px;font-weight:600;margin:0}
 .lead{color:var(--muted);margin:2px 0 0;max-width:62ch}
 .note{font-size:12.5px;color:var(--muted);margin:0}
-.eyebrow{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0;box-shadow:var(--shadow)}
+.panel.flush{padding:0;overflow:hidden}
+.panel .pad{padding:12px 14px 14px;display:flex;flex-direction:column;gap:10px}
+.panel.guide{border:2px solid var(--accent)}
+.panel.empty{align-items:center;text-align:center;padding:28px 18px}
 .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .row.between{justify-content:space-between}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
-.field{display:flex;flex-direction:column;gap:4px;min-width:0}
-.lbl{font-size:12px;font-weight:600;color:var(--muted)}
-input[type=text],input[type=number],select{width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)}
-.btn{min-height:46px;padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--panel-2);font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none}
+.col{display:flex;flex-direction:column;gap:8px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.lbl{font-size:12.5px;font-weight:600;color:var(--muted)}
+input[type=text],input[type=number],input[type=password],select,textarea{width:100%;min-height:46px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);outline:none;box-shadow:0 0 0 3px var(--accent-soft)}
+input[disabled],textarea[disabled]{background:var(--panel-2);color:var(--muted)}
+textarea{min-height:70px;resize:vertical;line-height:1.4}
+.btn{min-height:46px;padding:8px 16px;border-radius:12px;border:1.5px solid var(--line);background:#fff;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;color:var(--ink)}
+.btn:active{transform:translateY(1px)}
 .btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.primary:active{background:var(--accent-dk)}
 .btn.big{min-height:58px;font-family:var(--f-display);font-size:21px;text-transform:uppercase;letter-spacing:.05em;flex:1}
-.btn.stop{background:var(--miss);border-color:var(--miss);color:#1b0805}
-.btn.sm{min-height:38px;padding:4px 12px;font-size:13px}
+.btn.stop{background:var(--miss);border-color:var(--miss);color:#fff}
+.btn.sm{min-height:40px;padding:4px 12px;font-size:13.5px;border-radius:10px}
+.btn.sm .ic{width:17px;height:17px}
+.btn.ghost{background:none;border-color:transparent}
 .btn.danger{color:var(--miss)}
 .btn[disabled]{opacity:.4;cursor:not-allowed}
-.link{background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:6px 0;min-height:36px;text-align:left}
-.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
-.seg button{flex:1;min-height:42px;border:0;background:var(--panel-2);font-weight:600;font-size:13px;cursor:pointer;padding:4px 8px}
+.link{background:none;border:0;color:var(--accent);font-weight:600;cursor:pointer;padding:6px 0;min-height:38px;text-align:left}
+.seg{display:flex;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:#fff}
+.seg button{flex:1;min-height:44px;border:0;background:none;font-weight:600;font-size:13.5px;cursor:pointer;padding:4px 10px}
+.seg button+button{border-left:1.5px solid var(--line)}
 .seg button.on{background:var(--accent);color:var(--accent-ink)}
+.seg.sm button{min-height:38px;font-size:13px}
+details.more summary{cursor:pointer;font-weight:600;color:var(--accent);min-height:36px;display:flex;align-items:center}
+details.more[open]{display:flex;flex-direction:column;gap:8px}
+
+/* standard header + tabs */
+.sthead{display:flex;flex-direction:column;gap:2px}
+.tabs{position:sticky;top:calc(var(--abh) + env(safe-area-inset-top,0px));z-index:15;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px;box-shadow:var(--shadow);scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{min-height:54px;padding:6px 4px;border-radius:10px;border:0;background:none;font-weight:600;font-size:12px;line-height:1.15;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;text-align:center;min-width:0}
+.tabs button.on{background:var(--accent-soft);color:var(--accent-dk)}
+.tabs .ic{width:18px;height:18px}
+
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
-.step{background:var(--panel-2);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:4px}
-.step b{font-family:var(--f-display);font-size:28px;color:var(--accent);line-height:1}
+.step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px;box-shadow:var(--shadow)}
+.step b{font-family:var(--f-display);font-size:30px;color:var(--accent);line-height:1}
 .list{display:flex;flex-direction:column}
 .item{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px 2px;border:0;border-bottom:1px solid var(--line);background:none;width:100%;text-align:left;cursor:pointer;flex-wrap:wrap}
 .item:last-child{border-bottom:0}
 .item .meta{color:var(--muted);font-size:13px}
 .item-main{min-width:0;flex:1}
-.chip{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
-.chip.factory{color:var(--accent);border-color:var(--accent)}
+.chip{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip.factory,.chip.vid{color:var(--accent);border-color:var(--accent)}
 .st{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;white-space:nowrap}
 .st::before{content:"";width:10px;height:10px;border-radius:3px;background:var(--c)}
-.stage{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:4/3;max-height:60vh;margin:0 auto}
+.kpb{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:2px 7px;color:#fff;background:var(--c);margin-right:4px;white-space:nowrap}
+
+/* camera + video surfaces (dark) */
+.stage{position:relative;width:100%;border-radius:14px;overflow:hidden;background:#000;aspect-ratio:4/3;max-height:60vh;margin:0 auto}
 .stage video,.stage canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .stage.mirror video,.stage.mirror canvas{transform:scaleX(-1)}
 .hud{position:absolute;left:10px;right:10px;top:10px;display:flex;justify-content:space-between;gap:8px;pointer-events:none;flex-wrap:wrap}
-.pill{font-family:var(--f-display);font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.03em;padding:4px 12px;border-radius:999px;background:rgba(0,0,0,.65)}
-.pill.rec{color:#fff;background:rgba(200,40,30,.85)}
+.pill{font-family:var(--f-display);font-weight:700;font-size:19px;text-transform:uppercase;letter-spacing:.03em;padding:4px 12px;border-radius:999px;background:rgba(0,0,0,.6);color:#fff}
+.pill.rec{background:rgba(209,53,42,.9)}
 .count{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--f-display);font-weight:700;font-size:120px;color:#fff;text-shadow:0 4px 20px rgba(0,0,0,.6);pointer-events:none}
-.msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:8px;background:rgba(13,18,20,.85)}
+.msg{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:20px;gap:8px;background:rgba(10,16,15,.86)}
+.msg .note{color:var(--dark-ink);font-size:14px}
+.vstage{position:relative;background:#000;width:100%}
+.vstage video{width:100%;max-height:56vh;display:block;object-fit:contain;background:#000}
+.vstage canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.pinv{position:sticky;top:calc(var(--abh) + env(safe-area-inset-top,0px));z-index:12}
+.pinv .vstage video{max-height:32vh}
+.pinv .pctl{padding-bottom:10px}
+body.typing .pinv .vstage video{max-height:22vh}
+body.typing .pinv .pctl{display:none}
+body.typing .pinv .player canvas{max-height:22vh}
+.vcap{position:absolute;left:10px;bottom:10px;max-width:calc(100% - 20px);background:rgba(0,0,0,.66);color:#fff;border-radius:8px;padding:4px 10px;font-weight:600;font-size:14px;pointer-events:none}
+.vcap:empty{display:none}
 .bar{height:8px;border-radius:4px;background:var(--panel-2);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent)}
 .bar i.over{background:var(--slow)}
-.player canvas{width:100%;aspect-ratio:4/3;background:#06090a;border-radius:10px;display:block}
+.player canvas{width:100%;aspect-ratio:4/3;background:var(--dark);border-radius:12px;display:block}
+.pinv .player canvas{max-height:32vh;width:auto;margin:0 auto}
+.panel.flush .player canvas{border-radius:0}
 .pctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.panel.flush .pctl{padding:10px 14px 0}
 .pctl input[type=range]{flex:1 1 120px;min-width:0;accent-color:var(--accent);min-height:36px}
 .pctl .time{font-family:var(--f-mono);font-size:12px;color:var(--muted);min-width:11ch;text-align:right}
-.tl{position:relative;height:42px;border-radius:8px;background:var(--panel-2);overflow:hidden;cursor:pointer;touch-action:manipulation}
-.tl .blk{position:absolute;top:0;bottom:0;border-right:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:11px;color:#071211;font-weight:500;overflow:hidden}
-.tl .out{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(0,0,0,.55),rgba(0,0,0,.55) 4px,rgba(0,0,0,.35) 4px,rgba(0,0,0,.35) 8px)}
-.tl .ph{position:absolute;top:-2px;bottom:-2px;width:2px;background:#fff;box-shadow:0 0 0 1px #000;pointer-events:none}
+.tl{position:relative;height:44px;border-radius:10px;background:var(--panel-2);overflow:hidden;cursor:pointer;touch-action:manipulation;border:1px solid var(--line)}
+.tl .blk{position:absolute;top:0;bottom:0;border-right:2px solid #fff;display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-size:11px;color:#0b1513;font-weight:600;overflow:hidden}
+.tl .out{position:absolute;top:0;bottom:0;background:repeating-linear-gradient(45deg,rgba(20,34,31,.5),rgba(20,34,31,.5) 4px,rgba(20,34,31,.3) 4px,rgba(20,34,31,.3) 8px)}
+.tl .ph{position:absolute;top:-2px;bottom:-2px;width:3px;background:var(--ink);box-shadow:0 0 0 1px #fff;pointer-events:none}
 .tl .mk{position:absolute;top:0;width:2px;height:10px;background:var(--slow)}
-.tl-lbl{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+.tl-lbl{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
 table{border-collapse:collapse;width:100%;font-size:13.5px}
-th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
-th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);font-weight:600}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--panel-2);font-weight:700}
 td.r,th.r{text-align:right}
 td.num,.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
 tr:last-child td{border-bottom:0}
-tr.sel td{background:var(--panel-2)}
+tr.sel td{background:var(--accent-soft)}
 tr.click{cursor:pointer}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
-.stat{background:var(--panel-2);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:2px}
 .stat b{font-family:var(--f-display);font-size:30px;font-weight:700;line-height:1}
 .stat span{font-size:12px;color:var(--muted)}
 .imp{display:flex;flex-direction:column;gap:8px}
-.imp-item{display:grid;grid-template-columns:4px 1fr auto;gap:4px 12px;padding:10px 12px 10px 0;background:var(--panel-2);border-radius:10px;cursor:pointer;border:0;text-align:left;width:100%}
-.imp-item .sev{grid-row:1/3;background:var(--c);border-radius:10px 0 0 10px}
+.imp-item{display:grid;grid-template-columns:5px 1fr auto;gap:4px 12px;padding:10px 12px 10px 0;background:var(--panel-2);border-radius:12px;cursor:pointer;border:0;text-align:left;width:100%}
+.imp-item .sev{grid-row:1/3;background:var(--c);border-radius:12px 0 0 12px}
 .imp-item .t{font-weight:600}
-.imp-item .lost{font-family:var(--f-mono);font-size:13px;color:var(--c);text-align:right}
+.imp-item .lost{font-family:var(--f-mono);font-size:13px;color:var(--c);text-align:right;font-weight:600}
 .imp-item .d{grid-column:2/4;font-size:13px;color:var(--muted)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:16px;height:3px;background:var(--c);display:inline-block}
 .legend i.dash{background:repeating-linear-gradient(90deg,var(--c),var(--c) 4px,transparent 4px,transparent 7px)}
-.cur-el{font-family:var(--f-display);font-weight:600;font-size:20px;text-transform:uppercase}
-.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:14px;z-index:20;max-width:calc(100% - 32px)}
-.busy{position:fixed;inset:0;background:rgba(13,18,20,.85);display:flex;align-items:center;justify-content:center;z-index:30;font-family:var(--f-display);font-size:24px;text-transform:uppercase;letter-spacing:.05em}
-.check{display:flex;gap:10px;align-items:center;min-height:40px}
-.check input{width:20px;height:20px;accent-color:var(--accent)}
-textarea{width:100%;min-height:64px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);resize:vertical;line-height:1.4}
-.kchip{min-height:38px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel-2);font-weight:600;font-size:13px;cursor:pointer}
-.kchip.on{background:var(--c);border-color:var(--c);color:#0b1011}
-.jstep{gap:8px}
-.jstep .ph{max-width:220px;border-radius:8px;display:block}
+.cur-el{font-family:var(--f-display);font-weight:700;font-size:20px;text-transform:uppercase}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 16px;border-radius:10px;font-size:14px;z-index:60;max-width:calc(100% - 32px);box-shadow:var(--shadow)}
+.busy{position:fixed;inset:0;background:rgba(10,16,15,.82);color:#fff;display:flex;align-items:center;justify-content:center;z-index:55;font-family:var(--f-display);font-size:24px;text-transform:uppercase;letter-spacing:.05em;text-align:center;padding:20px}
+.check{display:flex;gap:10px;align-items:center;min-height:42px}
+.check input{width:22px;height:22px;accent-color:var(--accent);flex:none}
+.check.sm{min-height:34px;font-size:13px;font-weight:600}
+.kchip{min-height:40px;padding:4px 14px;border-radius:999px;border:1.5px solid var(--line);background:#fff;font-weight:600;font-size:13px;cursor:pointer}
+.kchip.on{background:var(--c);border-color:var(--c);color:#fff}
+.jstep,.vistep{gap:10px}
+.jstep h2,.vistep h2{display:flex;align-items:center;gap:8px}
+.sn{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--f-mono);font-size:15px;font-weight:600;flex:none}
+.picbox{border-radius:12px;overflow:hidden;background:var(--panel-2);border:1px solid var(--line)}
+.picbox canvas{display:block;width:100%;height:auto}
+.picbox.small{max-width:260px}
+.nopic{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:150px;color:var(--muted);font-size:13px}
 .savestate{font-size:12px;color:var(--muted);font-family:var(--f-mono)}
-.userbar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
-.uchip{display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:4px 12px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:600;font-size:13px;cursor:pointer}
-.uchip i{font-style:normal;color:var(--muted);font-weight:500}
-.menu{position:fixed;inset:0;z-index:40;background:rgba(5,8,9,.6);display:flex;align-items:flex-start;justify-content:flex-end;padding:calc(56px + env(safe-area-inset-top,0px)) 14px 14px}
-.menu .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;min-width:230px;padding:6px;display:flex;flex-direction:column}
-.menu .box button{background:none;border:0;text-align:left;padding:12px 14px;min-height:46px;border-radius:8px;font-weight:600;cursor:pointer}
+.chapters{display:flex;flex-direction:column;gap:6px}
+.chap{display:grid;grid-template-columns:32px 1fr auto;align-items:center;gap:10px;min-height:48px;padding:6px 10px;border-radius:12px;border:1.5px solid var(--line);background:#fff;cursor:pointer;text-align:left}
+.chap .n{width:28px;height:28px;border-radius:50%;background:var(--panel-2);display:flex;align-items:center;justify-content:center;font-family:var(--f-mono);font-weight:600}
+.chap.on{border-color:var(--accent);background:var(--accent-soft)}
+.chap.on .n{background:var(--accent);color:#fff}
+.chap .num{font-size:12px;color:var(--muted)}
+.menu{position:fixed;inset:0;z-index:40;background:rgba(10,16,15,.45);display:flex;align-items:flex-start;justify-content:flex-end;padding:calc(62px + env(safe-area-inset-top,0px)) 14px 14px}
+.menu .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;min-width:240px;padding:6px;display:flex;flex-direction:column;box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.menu .box button{background:none;border:0;text-align:left;padding:12px 14px;min-height:48px;border-radius:10px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px}
 .menu .box button:hover,.menu .box button:focus-visible{background:var(--panel-2)}
 .menu .box .who{padding:10px 14px;border-bottom:1px solid var(--line);margin-bottom:4px;font-size:13px;color:var(--muted)}
-.modal{position:fixed;inset:0;z-index:45;background:rgba(5,8,9,.7);display:flex;align-items:center;justify-content:center;padding:16px}
-.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;max-width:360px;width:100%;display:flex;flex-direction:column;gap:12px}
-.login{max-width:420px;margin:6vh auto 0;width:100%}
-.role{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.modal{position:fixed;inset:0;z-index:45;background:rgba(10,16,15,.6);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .box{background:var(--panel);border-radius:16px;padding:18px;max-width:380px;width:100%;display:flex;flex-direction:column;gap:12px;max-height:94vh;overflow:auto}
+.modal .box.wide{max-width:680px}
+.modal .box input[type=range]{width:100%;accent-color:var(--accent);min-height:36px}
+.modal.full{padding:0;background:var(--dark)}
+.markup{width:100%;height:100%;display:flex;flex-direction:column;color:var(--dark-ink);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.markup .mk-top{padding:10px 14px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.markup .mk-top .note{color:#b9c6c2}
+.markup .mk-stage{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 8px}
+.markup canvas{max-width:100%;max-height:100%;width:auto;height:auto;touch-action:none;border-radius:6px;background:#000}
+.markup .mk-tools{padding:10px 14px 14px;display:flex;flex-direction:column;gap:10px;background:#16211f}
+.markup .seg{background:#16211f;border-color:#2c3b38}
+.markup .seg button{color:var(--dark-ink)}
+.markup .seg button+button{border-color:#2c3b38}
+.markup .btn{background:#1f2c29;border-color:#2c3b38;color:var(--dark-ink)}
+.markup .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.swatch{width:40px;height:40px;border-radius:50%;border:3px solid #2c3b38;background:var(--c);cursor:pointer}
+.swatch.on{border-color:#fff;box-shadow:0 0 0 2px var(--accent)}
+.login{max-width:420px;margin:5vh auto 0;width:100%}
+.role{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
 .role.admin{color:var(--accent);border-color:var(--accent)}
 ul.tips{margin:0;padding-left:18px;color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:3px}
+@media (min-width:640px){h1{font-size:34px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top">
-    <button class="brand" data-act="home">Motion Study<small>Motion standards · job breakdown · employee checks</small></button>
-    <div class="userbar" id="userbar"><div class="privacy">Video stays on this phone. Only body-point coordinates are saved.</div></div>
-  </div>
-  <main id="app" class="wrap" style="padding:0;width:100%"></main>
-</div>
+<header class="appbar"><div class="appbar-in">
+  <button class="brand" data-act="home" aria-label="Motion Study home"><span class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="4.5" r="2"/><path d="M9 8v6l-3 6M9 14l3 6M9 9.5l-4 3M9 9.5l5-1.5"/><path d="M16 7v6l3 2" stroke-dasharray="2 2.4"/></svg></span><span><b>Motion Study</b><small>Work study &amp; instructions</small></span></button>
+  <div class="userbar" id="userbar"></div></div></header>
+<main id="app" class="wrap"></main>
 <div class="toast" id="toast" hidden></div>
 <div class="busy" id="busy" hidden>Analyzing…</div>
 <div class="menu" id="menu" hidden></div>
@@ -452,12 +539,12 @@ try{S.sens=localStorage.getItem("ms.sens")||"normal"}catch(e){}
 const ACT={};
 let player=null;
 function stopPlayer(){if(player){player.stop();player=null}}
-function go(view){if(!S.user&&view!=="login")view="login";stopPlayer();if(S.view==="jbs")jbsFlush();if(S.view==="record"&&view!=="record")stopRecordView();S.view=view;render();window.scrollTo(0,0)}
+function go(view){if(!S.user&&view!=="login")view="login";stopPlayer();closeModal();if(S.view==="jbs"||S.view==="vi")jbsFlush();if(S.view==="record"&&view!=="record")stopRecordView();S.view=view;render();window.scrollTo(0,0)}
 function render(){
   if(!S.user)S.view="login";
-  const v={library:vLibrary,std:vStd,record:vRecord,edit:vEdit,review:vReview,result:vResult,jbs:vJbs,login:vLogin,users:vUsers,password:vPassword}[S.view];
+  const v={library:vLibrary,std:vStd,record:vRecord,edit:vEdit,review:vReview,result:vResult,jbs:vJbs,vi:vVi,video:vVideo,login:vLogin,users:vUsers,password:vPassword}[S.view];
   app.innerHTML=v();
-  const m={record:mountRecord,edit:mountEdit,review:mountReview,result:mountResult,jbs:mountJbs}[S.view];if(m)m();
+  const m={record:mountRecord,edit:mountEdit,review:mountReview,result:mountResult,jbs:mountJbs,vi:mountJbs,video:mountVideo}[S.view];if(m)m();
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const f=ACT[b.dataset.act];if(f){e.preventDefault();f(b.dataset,b)}});
 document.addEventListener("change",e=>{const t=e.target;const f=t.dataset&&ACT[t.dataset.change];if(f)f(t.dataset,t)});
@@ -479,11 +566,11 @@ function vLibrary(){
   ${can("edit")?`<div class="row"><button class="btn primary big" data-act="newStd">Record new standard</button></div>`:""}`;
   h+=`<section class="panel"><div class="row between"><h2>Standards on this phone</h2><span class="note">${S.stds.length}</span></div>`;
   if(!S.stds.length)h+=`<p class="note">No standards yet. Record an expert, or import a standard file someone shared with you.</p>`;
-  else h+=`<div class="list">`+S.stds.map(s=>`<button class="item" data-act="openStd" data-id="${esc(s.id)}"><div class="item-main"><h3>${esc(s.name)}</h3><div class="meta">${esc(s.area||"")}${s.area?" · ":""}${s.elements.length} steps · expert ${fmtS(s.duration/1000)}${s.expert?" · "+esc(s.expert):""}</div></div>${s.factory?'<span class="chip factory">Factory library</span>':""}</button>`).join("")+`</div>`;
+  else h+=`<div class="list">`+S.stds.map(s=>`<button class="item" data-act="openStd" data-id="${esc(s.id)}"><div class="item-main"><h3>${esc(s.name)}</h3><div class="meta">${esc(s.area||"")}${s.area?" · ":""}${s.elements.length} steps · expert ${fmtS(s.duration/1000)}${s.expert?" · "+esc(s.expert):""}</div></div><span class="row">${s.video?'<span class="chip vid">Video</span>':""}${s.factory?'<span class="chip factory">Factory library</span>':""}</span></button>`).join("")+`</div>`;
   let lastB="";try{lastB=localStorage.getItem("ms.lastBackup")||""}catch(e){}
   const old=S.stds.length&&(!lastB||Date.now()-(+lastB)>7*864e5);
   h+=`</section><section class="panel"><h2>Google Drive backup</h2>
-  <p class="note">Standards and checks are saved on this phone. Back them up to Google Drive to keep them safe or move them to another phone: tap <b>Back up</b>, choose <b>Drive</b> in the share menu, and pick a folder.</p>
+  <p class="note">Standards, job breakdown sheets, step pictures and checks are saved on this phone (videos are not in the backup; share them from the Video tab). Back them up to Google Drive to keep them safe or move them to another phone: tap <b>Back up</b>, choose <b>Drive</b> in the share menu, and pick a folder.</p>
   ${old?`<p class="note" style="color:var(--slow)">${lastB?"Last backup "+fmtDate(+lastB)+".":"Not backed up yet."} Back up after recording new standards.</p>`:lastB?`<p class="note">Last backup ${fmtDate(+lastB)}.</p>`:""}
   <div class="row">${can("edit")?`<button class="btn sm primary" data-act="backup"${S.stds.length?"":" disabled"}>Back up to Google Drive</button>`:""}${can("users")?`<label class="btn sm" for="importFile">Restore from Drive / import file</label><input type="file" id="importFile" accept="*/*" data-change="importFile" hidden>`:""}</div>
   <p class="note">To restore, tap Restore, open the menu (☰) in the file picker, choose <b>Drive</b>, and pick the backup file.</p></section>
@@ -508,18 +595,6 @@ ACT.importFile=async(d,el)=>{const f=el.files&&el.files[0];if(!f)return;try{cons
   await loadStds();render();toast(ok.length?"Restored "+ok.length+" standard"+(ok.length>1?"s":"")+(na?" and "+na+" check"+(na>1?"s":""):""):"No standards found in that file")}catch(e){toast("That file isn't a Motion Study file.")}el.value=""};
 
 /* ===== Standard detail ===== */
-function vStd(){const s=S.cur;const smv=(s.duration/1000)*(s.rating||100)/100*(1+(s.allow||0)/100)/60;
-  let h=`<div class="row"><button class="link" data-act="home">← All standards</button></div><div><div class="eyebrow">${esc(s.area||"Standard")}</div><h1>${esc(s.name)}</h1><p class="lead">Expert${s.expert?" "+esc(s.expert):""} · recorded ${fmtDate(s.created)}${s.createdBy?" by "+esc(s.createdBy):""}</p></div>
-  <div class="stats"><div class="stat"><b class="num">${fmtS(s.duration/1000)}</b><span>expert cycle time</span></div><div class="stat"><b class="num">${smv.toFixed(2)}</b><span>SMV (min) at ${s.rating||100}% rating, ${s.allow||0}% allowance</span></div><div class="stat"><b class="num">${s.elements.length}</b><span>steps</span></div><div class="stat"><b class="num">${S.attempts.length}</b><span>employee checks</span></div></div>
-  <div class="row"><button class="btn primary big" data-act="checkEmp">Check an employee</button></div>
-  <section class="panel"><h2>Steps</h2><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Step</th><th class="r">Time</th><th class="r">Share</th><th>Key point</th></tr></thead><tbody>${s.elements.map((e,i)=>`<tr><td class="num">${i+1}</td><td>${esc(e.name)}</td><td class="r num">${((e.end-e.start)/1000).toFixed(1)} s</td><td class="r num">${Math.round((e.end-e.start)/s.duration*100)}%</td><td>${e.key?"Yes":""}</td></tr>`).join("")}</tbody></table></div>
-  <div class="row"><button class="btn sm primary" data-act="openJbs">Job Breakdown Sheet</button>${can("edit")?`<button class="btn sm" data-act="editStd">Edit steps</button><button class="btn sm" data-act="exportStd">Save to Google Drive</button>`:""}</div></section>`;
-  h+=`<section class="panel"><div class="row between"><h2>Employee checks</h2>${S.attempts.length?'<button class="btn sm" data-act="histCsv">Download CSV</button>':""}</div>`;
-  if(!S.attempts.length)h+=`<p class="note">No checks yet. Tap Check an employee and record them doing the same task, with the camera in the same place as for the expert.</p>`;
-  else h+=`<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Employee</th><th>Checked by</th><th class="r">Time</th><th class="r">Performance</th><th class="r">Method match</th><th class="r">Missed</th></tr></thead><tbody>${S.attempts.map(a=>`<tr class="click" data-act="openAtt" data-id="${esc(a.id)}"><td>${fmtDate(a.created)}</td><td>${esc(a.operator||"—")}${a.opId?" · "+esc(a.opId):""}</td><td>${esc(a.checkedBy||"")}</td><td class="r num">${fmtS(a.result.summary.actTotal)}</td><td class="r num">${a.result.summary.perf}%</td><td class="r num">${a.result.summary.match}%</td><td class="r num" style="color:${a.result.summary.missed?"var(--miss)":"inherit"}">${a.result.summary.missed}</td></tr>`).join("")}</tbody></table></div>`;
-  h+=`</section>`+(can("delete")?`<section class="panel"><div class="row between"><span class="note">Deleting removes this standard and its checks from this phone.</span><button class="btn sm danger" data-act="delStd">Delete standard</button></div></section>`:"");
-  return h;
-}
 ACT.checkEmp=()=>{R.mode="attempt";R.std=S.cur;go("record")};
 ACT.editStd=()=>{const s=S.cur;E.init({frames:s.frames,ar:s.ar,marks:[]},s);go("edit")};
 ACT.exportStd=()=>{const{factory,...s}=S.cur;download("standard-"+safeName(s.name)+".json",JSON.stringify({type:"motion-standard",version:1,standard:s}),"application/json")};
@@ -527,12 +602,12 @@ ACT.histCsv=()=>{const s=S.cur;const rows=[["date","checked_by","employee","empl
   S.attempts.forEach(a=>rows.push([fmtDate(a.created),a.checkedBy||"",a.operator||"",a.opId||"",a.result.summary.actTotal.toFixed(1),a.result.summary.stdTotal.toFixed(1),a.result.summary.perf,a.result.summary.match,a.result.summary.missed,...a.result.elements.map(e=>e.actT.toFixed(1))]));
   download("checks-"+safeName(s.name)+".csv",toCsv(rows),"text/csv")};
 const toCsv=rows=>rows.map(r=>r.map(v=>{v=String(v);return/[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v}).join(",")).join("\n");
-ACT.delStd=async()=>{if(!confirm("Delete this standard and all its employee checks from this phone?"))return;for(const a of S.attempts)await Store.del("attempts",a.id,a.stdId);await Store.del("standards",S.cur.id);
+ACT.delStd=async()=>{if(!confirm("Delete this standard and all its employee checks from this phone?"))return;for(const a of S.attempts)await Store.del("attempts",a.id,a.stdId);if(S.cur.video)await deleteVideoFile(S.cur.video);await Store.del("standards",S.cur.id);
   if(S.factory.has(S.cur.id))toast("Removed from this phone. It will come back while it is in the factory library file.");await loadStds();go("library")};
 ACT.openAtt=d=>{const a=S.attempts.find(x=>x.id===d.id);if(!a)return;Res.att=a;Res.std=S.cur;go("result")};
 
 /* ===== Record ===== */
-const R={mode:"standard",std:null,src:"camera",facing:"environment",stream:null,file:null,raf:0,recording:false,counting:false,frames:[],marks:[],t0:0,lastDet:0,lastVT:-1,ar:4/3,autoStop:true,cd:5,status:""};
+const R={vrec:null,chunks:[],vOffset:0,vmime:"",mode:"standard",std:null,src:"camera",facing:"environment",stream:null,file:null,raf:0,recording:false,counting:false,frames:[],marks:[],t0:0,lastDet:0,lastVT:-1,ar:4/3,autoStop:true,cd:5,status:""};
 function vRecord(){const att=R.mode==="attempt";
   return`<div class="row"><button class="link" data-act="${att?"backStd":"home"}">← ${att?"Back to standard":"All standards"}</button></div>
   <div><div class="eyebrow">${att?"Employee check":"New standard"}</div><h1>${att?esc(R.std.name):"Record the expert"}</h1></div>
@@ -546,7 +621,7 @@ function vRecord(){const att=R.mode==="attempt";
     ${R.src==="camera"?`<select id="cd" data-change="cd" style="width:auto;min-height:38px">${[0,3,5,10].map(s=>`<option value="${s}"${R.cd===s?" selected":""}>${s?s+" s countdown":"No countdown"}</option>`).join("")}</select>`:""}</div>
   ${att?`<label class="check"><input type="checkbox" id="autoStop" data-change="autoStop"${R.autoStop?" checked":""}> Stop by itself when the employee stays still for 3 s at the end</label>`:""}
   <div class="row"><button class="btn primary big" id="recBtn" data-act="recToggle" disabled>Start recording</button></div>
-  <section class="panel"><h2>Camera placement</h2><ul class="tips"><li>Phone on a stand or clamp, 2–3 m away, landscape. Do not move it between recordings.</li><li>Whole upper body and both hands in view. Light in front of the person, not behind.</li><li>Use the same position and angle for the expert and for every employee.</li>${att?"":"<li>Record one clean, typical cycle. Tap Mark step at each step change if you want to set the steps yourself.</li>"}</ul></section>`;
+  <section class="panel"><h2>Camera placement</h2><ul class="tips"><li>Phone on a stand or clamp, 2–3 m away, landscape. Do not move it between recordings.</li><li>Whole upper body and both hands in view. Light in front of the person, not behind.</li><li>Use the same position and angle for the expert and for every employee.</li>${att?"":"<li>Record one clean, typical cycle. The video is kept as the best-practice video if you choose to save it after naming the steps.</li>"}</ul></section>`;
 }
 ACT.backStd=()=>go("std");
 ACT.src=d=>{if(R.recording)return;R.src=d.v;stopRecordView();render()};
@@ -572,7 +647,7 @@ async function mountRecord(){
   if(R.src==="file"&&R.file){const v=$("#rv");v.src=URL.createObjectURL(R.file);v.onloadeddata=()=>{R.ar=v.videoWidth/v.videoHeight;sizeStage();readyCheck()}}
   cancelAnimationFrame(R.raf);R.raf=requestAnimationFrame(recLoop);
 }
-function stopRecordView(){cancelAnimationFrame(R.raf);R.recording=false;R.counting=false;if(R.stream){R.stream.getTracks().forEach(t=>t.stop());R.stream=null}const v=$("#rv");if(v){try{v.pause()}catch(e){}}}
+function stopRecordView(){cancelAnimationFrame(R.raf);if(R.vrec)stopVideoRec(false);R.recording=false;R.counting=false;if(R.stream){R.stream.getTracks().forEach(t=>t.stop());R.stream=null}const v=$("#rv");if(v){try{v.pause()}catch(e){}}}
 const curT=()=>R.src==="file"?$("#rv").currentTime*1000:performance.now()-R.t0;
 function recLoop(){
   if(S.view!=="record")return;R.raf=requestAnimationFrame(recLoop);
@@ -603,13 +678,24 @@ async function startRec(){
   R.frames=[];R.marks=[];R.recording=true;beep(1320,.25);
   $("#recBtn").textContent="Stop";$("#recBtn").classList.add("stop");$("#hudL").textContent="Recording";$("#hudL").classList.add("rec");const mb=$("#markBtn");if(mb)mb.disabled=false;
   if(R.src==="file"){const v=$("#rv");v.currentTime=0;v.onended=()=>finishRec();try{await v.play()}catch(e){toast("Couldn't play the video.");R.recording=false}}
-  else R.t0=performance.now();
+  else{R.t0=performance.now();startVideoRec()}
 }
-function finishRec(){
+function startVideoRec(){R.vrec=null;R.chunks=[];R.vOffset=0;
+  if(R.mode!=="standard"||!R.stream||!window.MediaRecorder)return;
+  try{const types=["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"];const mt=types.find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch(e){return false}})||"";
+    const r=new MediaRecorder(R.stream,mt?{mimeType:mt,videoBitsPerSecond:2500000}:{videoBitsPerSecond:2500000});R.vmime=r.mimeType||mt||"video/webm";
+    r.ondataavailable=e=>{if(e.data&&e.data.size)R.chunks.push(e.data)};r.onstart=()=>{R.vOffset=performance.now()-R.t0};r.start(1000);R.vrec=r}
+  catch(e){R.vrec=null}}
+async function stopVideoRec(keep){const r=R.vrec;R.vrec=null;if(!r)return null;
+  if(r.state!=="inactive")await new Promise(res=>{r.onstop=()=>res();try{r.stop()}catch(e){res()}setTimeout(res,4000)});
+  const blob=keep?new Blob(R.chunks,{type:(R.vmime||"video/webm").split(";")[0]}):null;R.chunks=[];
+  return blob&&blob.size>2000?{blob,mime:blob.type,offsetMs:R.vOffset||0}:null}
+async function finishRec(){
   if(!R.recording)return;R.recording=false;beep(440,.3);const v=$("#rv");if(R.src==="file")try{v.pause()}catch(e){}
   const withPerson=R.frames.filter(f=>f.p).length;
-  if(withPerson<10){toast("No person was detected. Check the camera view and try again.");render();return}
+  if(withPerson<10){await stopVideoRec(false);toast("No person was detected. Check the camera view and try again.");render();return}
   const rec={frames:R.frames.slice(),marks:R.marks.slice(),ar:R.ar};
+  if(R.mode==="standard"){if(R.src==="file"&&R.file)rec.video={blob:R.file,mime:R.file.type||"video/mp4",offsetMs:0};else{const b=$("#recBtn");if(b){b.disabled=true;b.textContent="Finishing video…"}rec.video=await stopVideoRec(true)}}
   if(R.mode==="standard"){E.init(rec,null);go("edit")}else{RV.init(rec,R.std);go("review")}
 }
 
@@ -623,13 +709,144 @@ class Player{
   seek(t){this.t=clamp(t,0,this.dur);this.rng.value=this.t;this.tm.textContent=fmtClock(this.t)+" / "+fmtClock(this.dur);this.draw(this.cv,this.t);if(this.onTime)this.onTime(this.t)}
   toggle(){this.playing?this.pause():this.play()}
   play(){if(this.t>=this.dur-1)this.t=0;this.playing=true;this.btn.textContent="Pause";let last=performance.now();
-    const step=()=>{if(!this.playing)return;const n=performance.now();this.t+=(n-last)*this.speed;last=n;if(this.t>=this.dur){this.t=this.dur;this.pause()}this.seek(this.t);if(this.playing)this.raf=requestAnimationFrame(step)};this.raf=requestAnimationFrame(step)}
+    const step=()=>{if(!this.playing)return;const n=performance.now();this.t+=(n-last)*this.speed;last=n;
+      if(this.stopAt!=null&&this.t>=this.stopAt){const s=this.stopAt,f=this.onStop;this.stopAt=null;this.onStop=null;this.pause();this.seek(s);if(f)f();return}
+      if(this.t>=this.dur){this.t=this.dur;this.pause()}this.seek(this.t);if(this.playing)this.raf=requestAnimationFrame(step)};this.raf=requestAnimationFrame(step)}
+  playTo(t,cb){this.stopAt=t;this.onStop=cb;this.play()}
   pause(){this.playing=false;cancelAnimationFrame(this.raf);this.btn.textContent="Play"}
   stop(){this.pause();this.ro.disconnect()}
 }
 const playerHtml=(id,speed=true)=>`<div class="player" id="${id}"><canvas></canvas><div class="pctl"><button class="btn sm" data-pl="play" style="min-width:72px">Play</button><input type="range" min="0" step="10" value="0" aria-label="Replay position"><span class="time">00:00.0</span>${speed?`<select data-pl="speed" style="width:auto;min-height:38px"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select>`:""}</div></div>`;
 function drawAbsFrame(cv,frames,t,color,ar){sizeCanvasIfNeeded(cv,ar);const ctx=cv.getContext("2d");ctx.clearRect(0,0,cv.width,cv.height);const f=nearest(frames,t);if(f&&f.p)drawSkel(ctx,absPts(f.p,cv.width,cv.height),color,{width:Math.max(3,cv.width/150)});else{ctx.fillStyle="#93a3a3";ctx.font=(cv.width/28)+"px IBM Plex Sans, sans-serif";ctx.fillText("No person in view",cv.width*.05,cv.height*.1)}}
 function sizeCanvasIfNeeded(cv,ar){const w=Math.round((cv.clientWidth||640)*(window.devicePixelRatio||1));if(cv.width!==w){cv.width=w;cv.height=Math.round(w/ar)}cv.style.aspectRatio=String(ar)}
+
+/* ===== Icons ===== */
+const ICONS={grid:'<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',play:'<path d="M7 4.8v14.4L19 12z"/>',doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',
+  image:'<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 8"/>',camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  pen:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="m13 7 4 4"/>',share:'<circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.6-3.6M8.2 13.2l7.6 3.6"/>',
+  check:'<path d="m5 12 4 4 10-10"/>',next:'<path d="M9 5l7 7-7 7"/>',pdf:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4"/><path d="M9 13h6M9 17h4"/>',
+  trash:'<path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/>',users:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.3-5.5 6.5-5.5s5.7 2 6.5 5.5M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.6c2 .7 3.2 2.6 3.6 5.4"/>',
+  key:'<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3"/>',out:'<path d="M14 4h5v16h-5M10 8l-4 4 4 4M6 12h10"/>',power:'<path d="M12 3v9M6.5 6.5a8 8 0 1 0 11 0"/>',
+  list:'<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',rec:'<circle cx="12" cy="12" r="6"/>',xls:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M4 9h16M4 15h16M10 3v18"/>'};
+const ic=(n,cls="")=>`<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n]||""}</svg>`;
+
+/* ===== Printed-document labels (English / Bangla / both) ===== */
+let DL="both";try{DL=localStorage.getItem("ms.docLang")||"both"}catch(e){}
+const LBL={jbs:["Job Breakdown Sheet","জব ব্রেকডাউন শিট"],vi:["Visual Work Instruction","চিত্রসহ কাজের নির্দেশনা"],op:["Operation","কাজের নাম"],dept:["Department / line","বিভাগ / লাইন"],
+  part:["Part / product","পার্ট / পণ্য"],tools:["Tools & materials","যন্ত্রপাতি ও উপকরণ"],ppe:["Safety equipment (PPE)","সুরক্ষা সরঞ্জাম (পিপিই)"],ct:["Cycle time / SMV","সাইকেল টাইম / এসএমভি"],
+  doc:["Document no. / Rev.","ডকুমেন্ট নং / সংশোধন"],date:["Date","তারিখ"],no:["No.","নং"],what:["Important step (what)","গুরুত্বপূর্ণ ধাপ (কী)"],how:["Key points (how)","মূল বিষয় (কীভাবে)"],
+  why:["Reasons (why)","কারণ (কেন)"],time:["Time s","সময় (সে.)"],photo:["Photo","ছবি"],prep:["Prepared by","প্রস্তুতকারী"],appr:["Approved by","অনুমোদনকারী"],kpt:["Key point types","মূল বিষয়ের ধরন"],
+  cont:["continued","চলমান"],step:["Step","ধাপ"],nopic:["No picture","ছবি নেই"],kptype:["Key point type","মূল বিষয়ের ধরন"],safety:["Safety","নিরাপত্তা"],quality:["Quality","গুণমান"],
+  technique:["Technique","কৌশল"],cost:["Cost","খরচ"]};
+function L(k){const v=LBL[k];if(!v)return k;return DL==="en"?v[0]:DL==="bn"?v[1]:v[0]+" / "+v[1]}
+function L2(k){const v=LBL[k];if(!v)return esc(k);return DL==="en"?esc(v[0]):DL==="bn"?esc(v[1]):esc(v[0])+'<br><span class="bn">'+esc(v[1])+"</span>"}
+const pageLbl=(k,n)=>DL==="en"?`Page ${k} of ${n}`:DL==="bn"?`পৃষ্ঠা ${k} / ${n}`:`Page / পৃষ্ঠা ${k} / ${n}`;
+function docLangSeg(){return`<div class="seg sm" role="group" aria-label="Language of printed documents">${[["en","English"],["bn","বাংলা"],["both","Both"]].map(([k,l])=>`<button class="${DL===k?"on":""}" data-act="docLang" data-k="${k}">${l}</button>`).join("")}</div>`}
+ACT.docLang=d=>{DL=d.k;try{localStorage.setItem("ms.docLang",DL)}catch(e){}document.querySelectorAll("[data-act=docLang]").forEach(b=>b.classList.toggle("on",b.dataset.k===DL))};
+
+/* ===== Video helpers ===== */
+// Recorded WebM files have no duration until the end is read once; this forces it so seeking works.
+function fixDuration(v){if(isFinite(v.duration)&&v.duration>0)return Promise.resolve();return new Promise(res=>{let done=false;const fin=()=>{if(done)return;done=true;v.removeEventListener("timeupdate",h);try{v.currentTime=0}catch(e){}res()};const h=()=>{if(isFinite(v.duration))fin()};v.addEventListener("timeupdate",h);try{v.currentTime=1e101}catch(e){fin()}setTimeout(fin,2500)})}
+async function videoSrc(meta){if(!meta||!meta.file)return null;if(NATIVE&&FS&&FS.getUri){try{const r=await FS.getUri({path:meta.file,directory:"DATA"});return window.Capacitor.convertFileSrc(r.uri)}catch(e){return null}}return null}
+async function writeBlob(blob,path,directory,onP){const CH=3*1024*1024;if(!blob||!blob.size)throw new Error("The video is empty");
+  for(let off=0;off<blob.size;off+=CH){const b64=abToB64(await blob.slice(off,off+CH).arrayBuffer());
+    if(off===0)await FS.writeFile({path,data:b64,directory,recursive:true});else await FS.appendFile({path,data:b64,directory});
+    if(onP)onP(Math.min(1,(off+CH)/blob.size))}}
+async function storeVideo(id,name,blob,mime,start){const ext=/mp4/.test(mime||"")?"mp4":"webm";const b=$("#busy");
+  if(!NATIVE||!FS){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=safeName(name)+"."+ext;document.body.appendChild(a);a.click();a.remove();toast("Video downloaded. The best-practice video player works in the Android app.");return null}
+  const prog=(l,p)=>{b.textContent=l+" "+Math.round(p*100)+"%"};b.hidden=false;
+  try{const file="motionstudy/videos/"+id+"."+ext;await writeBlob(blob,file,"DATA",p=>prog("Saving video…",p));
+    let gallery=null;try{const g="Movies/MotionStudy/"+safeName(name)+"_"+new Date().toISOString().slice(0,10)+"_"+id.slice(-4)+"."+ext;await writeBlob(blob,g,"EXTERNAL_STORAGE",p=>prog("Copying to Gallery…",p));gallery=g}
+    catch(e){toast("Saved in the app, but couldn't copy it to the Gallery ("+(e.message||e)+"). Use Copy to Gallery on the Video tab.")}
+    return{file,gallery,mime:mime||("video/"+ext),ext,start,size:blob.size,created:Date.now()}}
+  finally{b.hidden=true;b.textContent="Analyzing…"}}
+async function deleteVideoFile(meta){if(!meta||!FS)return;try{await FS.deleteFile({path:meta.file,directory:"DATA"})}catch(e){}}
+
+/* Video player in recording time (ms). videoTime = (t - offsetMs) / 1000 */
+class VPlayer{
+  constructor(root,dur,src,offsetMs,onTime,overlay){this.root=root;this.dur=Math.max(1,dur);this.off=offsetMs||0;this.onTime=onTime;this.overlay=overlay;this.t=0;this.playing=false;this.stopAt=null;this.onStop=null;this.stops=null;
+    this.v=root.querySelector("video");this.cv=root.querySelector("canvas");this.rng=root.querySelector("input[type=range]");this.btn=root.querySelector("[data-pl=play]");this.tm=root.querySelector(".time");this.sp=root.querySelector("[data-pl=speed]");
+    this.v.muted=true;this.v.playsInline=true;this.v.preload="auto";if(src)this.v.src=src;
+    this.v.addEventListener("loadedmetadata",()=>{fixDuration(this.v).then(()=>this.seek(this.t))},{once:true});
+    this.rng.max=this.dur;this.rng.addEventListener("input",()=>{this.pause();this.seek(+this.rng.value)});this.btn.addEventListener("click",()=>this.toggle());
+    if(this.sp)this.sp.addEventListener("change",()=>{this.v.playbackRate=+this.sp.value})}
+  vt(t){return Math.max(0,(t-this.off)/1000)}
+  seek(t){this.t=clamp(t,0,this.dur);try{if(this.v.readyState>=1)this.v.currentTime=this.vt(this.t)}catch(e){}this.ui()}
+  ui(){this.rng.value=this.t;this.tm.textContent=fmtClock(this.t)+" / "+fmtClock(this.dur);
+    if(this.cv){const c=this.cv,x=c.getContext("2d");if(this.v.videoWidth&&(c.width!==this.v.videoWidth)){c.width=this.v.videoWidth;c.height=this.v.videoHeight}x.clearRect(0,0,c.width,c.height);if(this.overlay)this.overlay(c,this.t)}
+    if(this.onTime)this.onTime(this.t)}
+  toggle(){this.playing?this.pause():this.play()}
+  play(){if(this.t>=this.dur-40)this.seek(0);this.playing=true;this.btn.textContent="Pause";const p=this.v.play();if(p&&p.catch)p.catch(()=>{});let prev=this.t;
+    const step=()=>{if(!this.playing)return;this.t=Math.min(this.dur,this.v.currentTime*1000+this.off);
+      if(this.stopAt!=null&&this.t>=this.stopAt){const s=this.stopAt,f=this.onStop;this.stopAt=null;this.onStop=null;this.pause();this.seek(s);if(f)f();return}
+      if(this.stops){const b=this.stops.find(x=>x>prev+5&&x<=this.t);if(b!=null){this.pause();this.seek(b);if(this.onAutoStop)this.onAutoStop(b);return}}
+      if(this.t>=this.dur||this.v.ended){this.pause();this.t=this.dur}prev=this.t;this.ui();if(this.playing)this.raf=requestAnimationFrame(step)};
+    this.raf=requestAnimationFrame(step)}
+  playTo(t,cb){this.stopAt=t;this.onStop=cb;this.play()}
+  pause(){this.playing=false;cancelAnimationFrame(this.raf);try{this.v.pause()}catch(e){}this.btn.textContent="Play"}
+  stop(){this.pause();this.stopAt=null;this.onStop=null;try{this.v.removeAttribute("src");this.v.load()}catch(e){}}
+}
+const vplayerHtml=(id,cap)=>`<div class="player" id="${id}"><div class="vstage"><video playsinline muted></video><canvas></canvas>${cap?`<div class="vcap" id="${cap}"></div>`:""}</div><div class="pctl"><button class="btn sm" data-pl="play" style="min-width:76px">Play</button><input type="range" min="0" step="10" value="0" aria-label="Video position"><span class="time">00:00.0</span><select data-pl="speed" style="width:auto;min-height:38px"><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option></select></div></div>`;
+function drawOverlayFrame(cv,frames,t){const f=nearest(frames,t);if(f&&f.p)drawSkel(cv.getContext("2d"),absPts(f.p,cv.width,cv.height),"#4db2ab",{width:Math.max(3,cv.width/160)})}
+
+/* ===== Step pictures and mark-up (arrows, circles, boxes) ===== */
+function drawMarks(x,w,h,marks){const lw=Math.max(3,Math.round(w/110));
+  for(const m of marks||[]){const x1=m.x1*w,y1=m.y1*h,x2=m.x2*w,y2=m.y2*h;
+    const pass=(col,wd)=>{x.strokeStyle=col;x.lineWidth=wd;x.lineCap="round";x.lineJoin="round";x.beginPath();
+      if(m.t==="arrow"){x.moveTo(x1,y1);x.lineTo(x2,y2);const a=Math.atan2(y2-y1,x2-x1),Lh=Math.max(lw*4,Math.hypot(x2-x1,y2-y1)*.22);
+        x.moveTo(x2,y2);x.lineTo(x2-Lh*Math.cos(a-0.45),y2-Lh*Math.sin(a-0.45));x.moveTo(x2,y2);x.lineTo(x2-Lh*Math.cos(a+0.45),y2-Lh*Math.sin(a+0.45))}
+      else if(m.t==="circle")x.ellipse((x1+x2)/2,(y1+y2)/2,Math.max(1,Math.abs(x2-x1)/2),Math.max(1,Math.abs(y2-y1)/2),0,0,Math.PI*2);
+      else x.rect(Math.min(x1,x2),Math.min(y1,y2),Math.abs(x2-x1),Math.abs(y2-y1));
+      x.stroke()};
+    pass("rgba(0,0,0,.45)",lw+3);pass(m.c||"#e53935",lw)}}
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(new Error("Couldn't read a picture"));i.src=src})}
+// Picture with its marks, optionally fitted (letterboxed) into a box of boxW x boxH pixels
+async function photoOut(e,boxW,boxH){if(!e.photo)return null;const img=await loadImg(e.photo);const W=boxW||img.naturalWidth,H=boxH||img.naturalHeight;
+  const c=document.createElement("canvas");c.width=W;c.height=H;const x=c.getContext("2d");if(boxW){x.fillStyle="#eef1ef";x.fillRect(0,0,W,H)}
+  const k=boxW?Math.min(W/img.naturalWidth,H/img.naturalHeight):1,dw=img.naturalWidth*k,dh=img.naturalHeight*k,ox=(W-dw)/2,oy=(H-dh)/2;
+  x.drawImage(img,ox,oy,dw,dh);x.save();x.translate(ox,oy);drawMarks(x,dw,dh,e.marks);x.restore();return c.toDataURL("image/jpeg",0.88)}
+function drawPhotoCanvases(){document.querySelectorAll("canvas.phc").forEach(c=>{const e=S.cur&&S.cur.elements[+c.dataset.i];if(!e||!e.photo)return;
+  loadImg(e.photo).then(img=>{c.width=img.naturalWidth;c.height=img.naturalHeight;const x=c.getContext("2d");x.drawImage(img,0,0);drawMarks(x,c.width,c.height,e.marks)}).catch(()=>{})})}
+const kpBadges=e=>(e.kpType||[]).map(k=>`<span class="kpb" style="--c:${KPT[k].c}">${KPT[k].l}</span>`).join("");
+function closeModal(){const m=$("#modal");m.hidden=true;m.classList.remove("full");m.innerHTML=""}
+
+// Frame picker: choose the moment in the best-practice video that shows the step
+const G={i:-1};
+ACT.grab=async d=>{const s=S.cur,i=+d.i,e=s.elements[i];G.i=i;const src=await videoSrc(s.video);if(!src)return toast("Couldn't open the best-practice video.");
+  const m=$("#modal");m.innerHTML=`<div class="box wide" role="dialog" aria-labelledby="gT"><h2 id="gT"><span class="sn">${i+1}</span> ${esc(e.name)}</h2><p class="note">Slide to the moment that shows this step best, then take the picture.</p>
+    <div class="vstage" style="border-radius:12px;overflow:hidden"><video id="gV" playsinline muted preload="auto"></video></div>
+    <input type="range" id="gR" min="${Math.round(e.start)}" max="${Math.round(e.end)}" step="20" value="${Math.round((e.start+e.end)/2)}" aria-label="Moment within this step">
+    <div class="row between"><button class="btn sm" data-act="gStep" data-d="-100">◀ Back</button><span class="num note" id="gTm"></span><button class="btn sm" data-act="gStep" data-d="100">Forward ▶</button></div>
+    <div class="row"><button class="btn primary" data-act="gTake" style="flex:1">${ic("camera")}Take step picture</button><button class="btn" data-act="closeModal">Cancel</button></div></div>`;
+  m.hidden=false;const v=$("#gV"),off=-(s.video.start||0)*1000;const seek=()=>{const r=$("#gR");if(!r)return;const t=+r.value;try{v.currentTime=Math.max(0,(t-off)/1000)}catch(e){}$("#gTm").textContent=fmtClock(t-e.start)+" into the step"};
+  v.addEventListener("loadedmetadata",()=>fixDuration(v).then(seek),{once:true});v.src=src;$("#gR").addEventListener("input",seek)};
+ACT.gStep=d=>{const r=$("#gR");if(!r)return;r.value=clamp(+r.value+(+d.d),+r.min,+r.max);r.dispatchEvent(new Event("input"))};
+ACT.gTake=()=>{const v=$("#gV");if(!v||!v.videoWidth)return toast("The video isn't ready yet. Wait a moment and try again.");
+  const k=Math.min(1,1280/v.videoWidth),c=document.createElement("canvas");c.width=Math.round(v.videoWidth*k);c.height=Math.round(v.videoHeight*k);c.getContext("2d").drawImage(v,0,0,c.width,c.height);
+  const e=S.cur.elements[G.i];e.photo=c.toDataURL("image/jpeg",0.84);e.marks=[];jbsMark();closeModal();openMarkup(G.i)};
+ACT.closeModal=()=>{closeModal();if(S.view==="vi"||S.view==="jbs"){const y=window.scrollY;render();window.scrollTo(0,y)}};
+
+const MK={i:-1,tool:"arrow",color:"#e53935",marks:[],img:null,drag:null};
+const MKCOL=["#e53935","#ffc107","#2e9d4f","#ffffff"];
+function openMarkup(i){const e=S.cur.elements[i];if(!e.photo)return;MK.i=i;MK.marks=(e.marks||[]).map(x=>({...x}));const m=$("#modal");
+  m.innerHTML=`<div class="markup" role="dialog" aria-label="Mark up the step picture"><div class="mk-top"><b>${esc(L("step").split(" / ")[0])} ${i+1}: ${esc(e.name)}</b><span class="note">Drag on the picture to draw.</span></div>
+    <div class="mk-stage"><canvas id="mkC"></canvas></div>
+    <div class="mk-tools"><div class="seg">${[["arrow","Arrow"],["circle","Circle"],["box","Box"]].map(([k,l])=>`<button class="${MK.tool===k?"on":""}" data-act="mkTool" data-k="${k}">${l}</button>`).join("")}</div>
+    <div class="row">${MKCOL.map(c=>`<button class="swatch${MK.color===c?" on":""}" style="--c:${c}" data-act="mkCol" data-c="${c}" aria-label="Colour ${c}"></button>`).join("")}</div>
+    <div class="row"><button class="btn sm" data-act="mkUndo">Undo</button><button class="btn sm" data-act="mkClear">Clear</button><span style="flex:1"></span><button class="btn sm" data-act="closeModal">Cancel</button><button class="btn sm primary" data-act="mkDone">${ic("check")}Done</button></div></div></div>`;
+  m.classList.add("full");m.hidden=false;
+  loadImg(e.photo).then(img=>{MK.img=img;const c=$("#mkC");c.width=img.naturalWidth;c.height=img.naturalHeight;mkDraw();bindMk(c)})}
+function mkDraw(extra){const c=$("#mkC");if(!c||!MK.img)return;const x=c.getContext("2d");x.drawImage(MK.img,0,0);drawMarks(x,c.width,c.height,extra?MK.marks.concat([extra]):MK.marks)}
+function bindMk(c){const pt=ev=>{const r=c.getBoundingClientRect();return{x:clamp((ev.clientX-r.left)/r.width,0,1),y:clamp((ev.clientY-r.top)/r.height,0,1)}};
+  c.addEventListener("pointerdown",ev=>{ev.preventDefault();try{c.setPointerCapture(ev.pointerId)}catch(e){}const p=pt(ev);MK.drag={t:MK.tool,c:MK.color,x1:p.x,y1:p.y,x2:p.x,y2:p.y}});
+  c.addEventListener("pointermove",ev=>{if(!MK.drag)return;const p=pt(ev);MK.drag.x2=p.x;MK.drag.y2=p.y;mkDraw(MK.drag)});
+  const up=()=>{const d=MK.drag;MK.drag=null;if(d&&Math.hypot(d.x2-d.x1,d.y2-d.y1)>0.02)MK.marks.push(d);mkDraw()};
+  c.addEventListener("pointerup",up);c.addEventListener("pointercancel",up)}
+ACT.mkTool=d=>{MK.tool=d.k;document.querySelectorAll("[data-act=mkTool]").forEach(b=>b.classList.toggle("on",b.dataset.k===d.k))};
+ACT.mkCol=d=>{MK.color=d.c;document.querySelectorAll("[data-act=mkCol]").forEach(b=>b.classList.toggle("on",b.dataset.c===d.c))};
+ACT.mkUndo=()=>{MK.marks.pop();mkDraw()};ACT.mkClear=()=>{MK.marks=[];mkDraw()};
+ACT.mkDone=()=>{const e=S.cur.elements[MK.i];e.marks=MK.marks;jbsMark();closeModal();const y=window.scrollY;render();window.scrollTo(0,y)};
+ACT.markup=d=>openMarkup(+d.i);
 
 /* Timeline (elements over the recording) */
 function tlHtml(id,dur,blocks,trim,marks){
@@ -640,9 +857,12 @@ function tlHtml(id,dur,blocks,trim,marks){
 function tlBind(id,onSeek){const el=$("#"+id);if(!el)return;el.addEventListener("click",e=>{const r=el.getBoundingClientRect();onSeek(clamp((e.clientX-r.left)/r.width,0,1)*+el.dataset.dur)})}
 function tlHead(id,t){const el=$("#"+id);if(!el)return;el.querySelector(".ph").style.left=clamp(t/+el.dataset.dur*100,0,100)+"%"}
 
-/* ===== Edit standard ===== */
-const E={rec:null,F:null,trim:[0,0],els:[],sel:0,level:"normal",t:0,base:null,fields:{},
-  init(rec,base){this.rec=rec;this.base=base;this.F=prep(rec.frames,rec.ar);this.t=0;this.sel=0;
+/* ===== Edit standard: name the steps while watching the video ===== */
+const E={rec:null,F:null,trim:[0,0],els:[],sel:0,level:"normal",t:0,base:null,fields:{},video:null,videoUrl:null,ovl:false,g:"",
+  init(rec,base){this.rec=rec;this.base=base;this.F=prep(rec.frames,rec.ar);this.t=0;this.sel=0;this.g="";this.ovl=false;
+    if(this.videoUrl){try{URL.revokeObjectURL(this.videoUrl)}catch(e){}this.videoUrl=null}this.video=null;
+    if(rec.video&&rec.video.blob){this.videoUrl=URL.createObjectURL(rec.video.blob);this.video={src:this.videoUrl,offsetMs:rec.video.offsetMs||0,blob:rec.video.blob,mime:rec.video.mime,saved:false}}
+    else if(base&&base.video){this.video={src:null,offsetMs:-(base.video.start||0)*1000,saved:true,meta:base.video}}
     const dur=rec.frames[rec.frames.length-1].t;
     if(base){this.trim=[0,dur];this.els=base.elements.map(e=>({...e}));this.fields={name:base.name,area:base.area||"",expert:base.expert||"",rating:base.rating||100,allow:base.allow??15}}
     else{this.trim=autoTrim(this.F);this.fields={name:"",area:"",expert:"",rating:100,allow:15};this.resplit()}},
@@ -651,39 +871,64 @@ const E={rec:null,F:null,trim:[0,0],els:[],sel:0,level:"normal",t:0,base:null,fi
     this.els=[];for(let i=0;i<bs.length-1;i++)this.els.push({name:"Step "+(i+1),start:bs[i],end:bs[i+1],key:false});this.sel=0},
   dur(){return this.rec.frames[this.rec.frames.length-1].t}
 };
-function vEdit(){const d=E.dur(),f=E.fields,el=E.els[E.sel]||E.els[0];
-  const blocks=E.els.map((e,i)=>({s:e.start,e:e.end,c:ELCOL[i%ELCOL.length],l:i+1,sel:i===E.sel}));
-  return`<div class="row"><button class="link" data-act="${E.base?"backStd":"home"}">← ${E.base?"Back without saving":"Discard"}</button></div>
-  <div><div class="eyebrow">${E.base?"Edit standard":"New standard"}</div><h1>Name the steps</h1><p class="lead">Play the recording, check where each step starts, and give it a name. The striped parts at the ends are cut off.</p></div>
-  <section class="panel">${playerHtml("ePlayer")}<div class="cur-el" id="eCur"></div>
-  <div class="tl-lbl">Steps · tap to jump</div>${tlHtml("eTl",d,blocks,E.trim,E.rec.marks)}
-  <div class="row"><button class="btn sm" data-act="trimS">Start here</button><button class="btn sm" data-act="trimE">End here</button><span class="note">Cycle time: <b class="num" id="eDur">${fmtS((E.trim[1]-E.trim[0])/1000)}</b></span></div></section>
-  <section class="panel"><div class="row between"><h2>Step ${E.sel+1} of ${E.els.length}</h2><span class="num note">${fmtClock(el.start-E.trim[0])} – ${fmtClock(el.end-E.trim[0])} · ${((el.end-el.start)/1000).toFixed(1)} s</span></div>
-  <div class="field"><label class="lbl" for="elName">Step name</label><input type="text" id="elName" value="${esc(el.name)}" data-input="elName" placeholder="e.g. Pick up bobbin"></div>
-  <label class="check"><input type="checkbox" id="elKey" data-change="elKey"${el.key?" checked":""}> Key point (quality-critical; flagged red if missed)</label>
-  <div class="row"><button class="btn sm" data-act="split">Split at play position</button><button class="btn sm" data-act="mergeNext"${E.sel>=E.els.length-1?" disabled":""}>Merge with next</button><button class="btn sm" data-act="mergePrev"${E.sel===0?" disabled":""}>Merge with previous</button></div>
-  <div class="row"><button class="btn sm" data-act="prevEl"${E.sel===0?" disabled":""}>← Previous step</button><button class="btn sm" data-act="nextEl"${E.sel>=E.els.length-1?" disabled":""}>Next step →</button></div></section>
+function editTl(){return tlHtml("eTl",E.dur(),E.els.map((e,i)=>({s:e.start,e:e.end,c:ELCOL[i%ELCOL.length],l:i+1,sel:i===E.sel})),E.trim,E.rec.marks)}
+function stepPanelHtml(){const i=Math.min(E.sel,E.els.length-1),el=E.els[i],n=E.els.length,last=i>=n-1;
+  const hint=E.g==="playing"?"Playing this step…":E.g==="paused"?"Stopped at the end of this step. Type what the person did.":(E.video?"Tap Play step: the video stops at the end of the step.":"Tap Play step to watch it.");
+  return`<div class="row between"><h2><span class="sn">${i+1}</span> Step ${i+1} <span class="of">of ${n}</span></h2><span class="num note">${((el.end-el.start)/1000).toFixed(1)} s</span></div>
+  <p class="note" id="gHint">${hint}</p>
+  <div class="field"><label class="lbl" for="elName">Step name</label><input type="text" id="elName" value="${esc(el.name)}" data-input="elName" placeholder="e.g. Pick up bobbin" enterkeyhint="${last?"done":"next"}"></div>
+  <div class="row"><button class="btn primary" data-act="playStep" style="flex:1">${ic("play")}${E.g==="paused"?"Replay step":"Play step"}</button>
+    ${last?`<button class="btn primary" data-act="gDone" style="flex:1">${ic("check")}All steps named</button>`:`<button class="btn primary" data-act="nextPlay" style="flex:1">Next step ${ic("next")}</button>`}</div>
+  ${last?"":`<div class="field"><span class="lbl">Is the cut at the end of this step early or late?</span><div class="row"><button class="btn sm" data-act="nudge" data-d="-200">◀ Cut 0.2 s earlier</button><button class="btn sm" data-act="nudge" data-d="200">Cut 0.2 s later ▶</button></div></div>`}
+  <label class="check"><input type="checkbox" id="elKey" data-change="elKey"${el.key?" checked":""}> Key point (flagged red if an employee misses it)</label>
+  <details class="more"><summary>More: split, merge, move between steps</summary>
+    <div class="row"><button class="btn sm" data-act="split">Split at play position</button><button class="btn sm" data-act="mergeNext"${last?" disabled":""}>Merge with next</button><button class="btn sm" data-act="mergePrev"${i===0?" disabled":""}>Merge with previous</button></div>
+    <div class="row"><button class="btn sm" data-act="prevEl"${i===0?" disabled":""}>← Previous step</button><button class="btn sm" data-act="nextEl"${last?" disabled":""}>Next step without playing →</button></div></details>`}
+function vEdit(){const f=E.fields,hasV=!!E.video;
+  return`<div class="row"><button class="link" data-act="${E.base?"backStd":"home"}">← ${E.base?"Back without saving":"Discard recording"}</button></div>
+  <div><div class="eyebrow">${E.base?"Edit standard":"New standard · name the steps"}</div><h1>Name the steps</h1>
+  <p class="lead">${hasV?"The app found the steps from the motion. Watch each one on the video, name it, and fix the cut if it is early or late.":"Play each step, check where it starts and ends, and give it a name."}</p></div>
+  <section class="panel flush pinv">${hasV?vplayerHtml("ePlayer","eCap"):playerHtml("ePlayer")}</section>
+  <section class="panel guide" id="stepPanel">${stepPanelHtml()}</section>
+  <section class="panel"><div class="row between"><div class="cur-el" id="eCur"></div>${hasV?`<label class="check sm"><input type="checkbox" id="ovl" data-change="ovl"${E.ovl?" checked":""}> Show body lines</label>`:""}</div>
+   <div class="tl-lbl">Steps · tap to jump</div><div id="eTlBox">${editTl()}</div>
+   <div class="row"><button class="btn sm" data-act="trimS">Cycle starts here</button><button class="btn sm" data-act="trimE">Cycle ends here</button><span class="note">Cycle time <b class="num" id="eDur">${fmtS((E.trim[1]-E.trim[0])/1000)}</b></span></div></section>
   <section class="panel"><h2>Automatic split</h2><div class="seg">${["fewer","normal","more"].map(k=>`<button class="${E.level===k?"on":""}" data-act="level" data-k="${k}">${k==="fewer"?"Fewer steps":k==="more"?"More steps":"Normal"}</button>`).join("")}</div>
   <div class="row"><button class="btn sm" data-act="resplit">Split again automatically</button>${E.rec.marks.length?`<button class="btn sm" data-act="useMarks">Use my ${E.rec.marks.length} marks</button>`:""}</div><p class="note">Splitting again replaces the step names you typed.</p></section>
-  <section class="panel"><h2>Standard details</h2><div class="grid">
+  <section class="panel" id="detailsPanel"><h2>Standard details</h2><div class="grid">
   <div class="field" style="grid-column:1/-1"><label class="lbl" for="fName">Task name</label><input type="text" id="fName" value="${esc(f.name)}" data-input="fld" data-f="name" placeholder="e.g. Warp knotting, loom 12"></div>
   <div class="field"><label class="lbl" for="fArea">Department / line</label><input type="text" id="fArea" value="${esc(f.area)}" data-input="fld" data-f="area"></div>
   <div class="field"><label class="lbl" for="fExp">Expert name</label><input type="text" id="fExp" value="${esc(f.expert)}" data-input="fld" data-f="expert"></div>
   <div class="field"><label class="lbl" for="fRat">Expert rating %</label><input type="number" id="fRat" value="${f.rating}" min="60" max="140" data-input="fld" data-f="rating"></div>
   <div class="field"><label class="lbl" for="fAll">Allowance %</label><input type="number" id="fAll" value="${f.allow}" min="0" max="60" data-input="fld" data-f="allow"></div></div>
-  <button class="btn primary big" data-act="saveStd">Save standard</button></section>`;
+  <button class="btn primary big" data-act="saveStd">${ic("check")}Save standard</button></section>`;
 }
-function mountEdit(){const d=E.dur();
-  player=new Player($("#ePlayer"),d,(cv,t)=>drawAbsFrame(cv,E.rec.frames,t,t<E.trim[0]||t>E.trim[1]?"#5a6668":"#4db2ab",E.rec.ar),t=>{E.t=t;tlHead("eTl",t);const i=E.els.findIndex(e=>t>=e.start&&t<e.end);const c=$("#eCur");if(c)c.textContent=i>=0?(i+1)+". "+E.els[i].name:(t<E.trim[0]?"Before start (cut)":"After end (cut)")});
-  tlBind("eTl",t=>{player.pause();player.seek(t);const i=E.els.findIndex(e=>t>=e.start&&t<e.end);if(i>=0&&i!==E.sel){E.sel=i;rerenderEdit()}});
-  player.seek(E.t||E.trim[0]);
-}
-function rerenderEdit(){const t=E.t;stopPlayer();render();player.seek(t)}
+function editOnTime(t){E.t=t;tlHead("eTl",t);const tt=Math.max(E.trim[0],t-1);const i=E.els.findIndex(e=>tt>=e.start&&tt<e.end);const txt=i>=0?(i+1)+". "+E.els[i].name:(t<E.trim[0]?"Before the cycle (cut off)":"After the cycle (cut off)");
+  const c=$("#eCur");if(c)c.textContent=txt;const cap=$("#eCap");if(cap)cap.textContent=txt}
+async function mountEdit(){const d=E.dur();
+  if(E.video){const src=E.video.src||await videoSrc(E.video.meta);if(S.view!=="edit")return;if(!src)toast("Couldn't open the saved video; showing body lines only.");
+    player=new VPlayer($("#ePlayer"),d,src,E.video.offsetMs,editOnTime,(cv,t)=>{if(E.ovl)drawOverlayFrame(cv,E.rec.frames,t)})}
+  else player=new Player($("#ePlayer"),d,(cv,t)=>drawAbsFrame(cv,E.rec.frames,t,t<E.trim[0]||t>E.trim[1]?"#5a6668":"#4db2ab",E.rec.ar),editOnTime);
+  bindEditTl();player.seek(E.t||E.trim[0])}
+function bindEditTl(){tlBind("eTl",t=>{if(!player)return;player.pause();E.g="";player.seek(t);const i=E.els.findIndex(e=>t>=e.start&&t<e.end);if(i>=0&&i!==E.sel){E.sel=i}refreshStep()})}
+function refreshStep(){const p=$("#stepPanel");if(p)p.innerHTML=stepPanelHtml();const b=$("#eTlBox");if(b){b.innerHTML=editTl();bindEditTl();tlHead("eTl",E.t)}const d=$("#eDur");if(d)d.textContent=fmtS((E.trim[1]-E.trim[0])/1000)}
+function rerenderEdit(){stopPlayer();E.g="";render()}
+ACT.ovl=(d,el)=>{E.ovl=el.checked;if(player)player.seek(E.t)};
 ACT.fld=(d,el)=>{E.fields[d.f]=el.type==="number"?+el.value:el.value};
-ACT.elName=(d,el)=>{E.els[E.sel].name=el.value;const c=$("#eCur");if(c)c.textContent=(E.sel+1)+". "+el.value};
+ACT.elName=(d,el)=>{E.els[E.sel].name=el.value;const c=$("#eCur");if(c)c.textContent=(E.sel+1)+". "+el.value;const cap=$("#eCap");if(cap)cap.textContent=(E.sel+1)+". "+el.value};
 ACT.elKey=(d,el)=>{E.els[E.sel].key=el.checked};
-ACT.prevEl=()=>{E.sel=Math.max(0,E.sel-1);E.t=E.els[E.sel].start;rerenderEdit()};
-ACT.nextEl=()=>{E.sel=Math.min(E.els.length-1,E.sel+1);E.t=E.els[E.sel].start;rerenderEdit()};
+ACT.playStep=()=>{if(!player)return;const el=E.els[E.sel];const pv=document.querySelector(".pinv"),sp=$("#stepPanel");if(pv&&sp){const gap=sp.getBoundingClientRect().top-pv.getBoundingClientRect().bottom;if(gap>40||sp.getBoundingClientRect().top<pv.getBoundingClientRect().bottom)window.scrollBy({top:gap-10,behavior:"smooth"})}E.g="playing";const h=$("#gHint");if(h)h.textContent="Playing this step…";player.pause();player.seek(el.start);
+  const fin=()=>{E.g="paused";refreshStep();const n=$("#elName");if(n){n.focus({preventScroll:true});if(/^Step \d+$/.test(n.value))n.select()}};
+  if(player.playTo)player.playTo(el.end,fin);else player.play()};
+ACT.nextPlay=()=>{if(E.sel<E.els.length-1){E.sel++;refreshStep();ACT.playStep()}};
+ACT.gDone=()=>{if(player)player.pause();E.g="";refreshStep();const f=$("#fName");if(f){f.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>f.focus(),450)}toast("All steps named. Add the task details and save.")};
+ACT.nudge=d=>{const i=E.sel;if(i>=E.els.length-1)return;const a=E.els[i],b=E.els[i+1];const ne=clamp(a.end+(+d.d),a.start+300,b.end-300);a.end=ne;b.start=ne;
+  if(player){player.pause();player.seek(ne-40)}E.g="paused";refreshStep()};
+document.addEventListener("focusin",e=>{if(e.target&&e.target.id==="elName")document.body.classList.add("typing")});
+document.addEventListener("focusout",e=>{if(e.target&&e.target.id==="elName")document.body.classList.remove("typing")});
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target&&e.target.id==="elName"&&S.view==="edit"){e.preventDefault();if(E.sel<E.els.length-1)ACT.nextPlay();else ACT.gDone()}});
+ACT.prevEl=()=>{E.sel=Math.max(0,E.sel-1);E.g="";if(player){player.pause();player.seek(E.els[E.sel].start)}refreshStep()};
+ACT.nextEl=()=>{E.sel=Math.min(E.els.length-1,E.sel+1);E.g="";if(player){player.pause();player.seek(E.els[E.sel].start)}refreshStep()};
 ACT.split=()=>{const t=E.t;const i=E.els.findIndex(e=>t>e.start+300&&t<e.end-300);if(i<0)return toast("Move the play position inside a step, at least 0.3 s from its ends.");
   const e=E.els[i];E.els.splice(i+1,0,{name:"New step",start:t,end:e.end,key:false});e.end=t;E.sel=i+1;rerenderEdit()};
 ACT.mergeNext=()=>{const i=E.sel;if(i>=E.els.length-1)return;E.els[i].end=E.els[i+1].end;E.els[i].key=E.els[i].key||E.els[i+1].key;E.els.splice(i+1,1);rerenderEdit()};
@@ -695,12 +940,24 @@ function setTrim(i){const t=E.t;const tr=E.trim.slice();tr[i]=t;if(tr[1]-tr[0]<1
   E.els=E.els.filter(e=>e.end>tr[0]+200&&e.start<tr[1]-200);if(!E.els.length)E.resplit(false);else{E.els[0].start=tr[0];E.els[E.els.length-1].end=tr[1];E.els.forEach(e=>{e.start=clamp(e.start,tr[0],tr[1]);e.end=clamp(e.end,tr[0],tr[1])})}
   E.sel=Math.min(E.sel,E.els.length-1);rerenderEdit()}
 ACT.trimS=()=>setTrim(0);ACT.trimE=()=>setTrim(1);
-ACT.saveStd=async()=>{const f=E.fields;if(!f.name.trim()){toast("Give the task a name.");$("#fName").focus();return}
+ACT.saveStd=async()=>{const f=E.fields;if(!f.name.trim()){toast("Give the task a name.");const n=$("#fName");if(n){n.scrollIntoView({block:"center"});n.focus()}return}
+  if(E.video&&!E.video.saved){const v=E.video,mb=(v.blob.size/1048576).toFixed(1),m=$("#modal");
+    m.innerHTML=`<div class="box" role="dialog" aria-labelledby="vqT"><h2 id="vqT">Keep the best-practice video?</h2>
+      <p class="note">This ${mb} MB video becomes the best-practice video for <b>${esc(f.name.trim())}</b>. You can watch it step by step and take step pictures from it. It is saved in the app${NATIVE?" and in the phone's Gallery (Movies › MotionStudy)":""}.</p>
+      <div class="col"><button class="btn primary" data-act="saveWithVideo">${ic("check")}Save video</button><button class="btn" data-act="saveNoVideo">Discard video</button><button class="btn ghost" data-act="closeModal">Cancel</button></div></div>`;m.hidden=false;return}
+  await doSaveStd(E.video&&E.video.saved?"keep":"none")};
+ACT.saveWithVideo=()=>{closeModal();doSaveStd("new")};
+ACT.saveNoVideo=()=>{closeModal();doSaveStd("none")};
+async function doSaveStd(mode){const f=E.fields;
   const[t0,t1]=E.trim;const frames=E.rec.frames.filter(x=>x.t>=t0&&x.t<=t1).map(x=>({t:x.t-t0,p:x.p}));
   const els=E.els.map(e=>({...e,name:e.name.trim()||"Step",start:e.start-t0,end:e.end-t0,key:!!e.key}));
-  const now=Date.now();const s={createdBy:E.base?E.base.createdBy:S.user.name,updatedBy:S.user.name,jbs:E.base?E.base.jbs:undefined,id:E.base?E.base.id:uid(),name:f.name.trim(),area:f.area.trim(),expert:f.expert.trim(),rating:+f.rating||100,allow:+f.allow||0,ar:E.rec.ar,duration:frames[frames.length-1].t,elements:els,frames,created:E.base?E.base.created:now,updated:now};
+  const now=Date.now(),id=E.base?E.base.id:uid();
+  const s={createdBy:E.base?E.base.createdBy:S.user.name,updatedBy:S.user.name,jbs:E.base?E.base.jbs:undefined,id,name:f.name.trim(),area:f.area.trim(),expert:f.expert.trim(),rating:+f.rating||100,allow:+f.allow||0,ar:E.rec.ar,duration:frames[frames.length-1].t,elements:els,frames,created:E.base?E.base.created:now,updated:now};
+  if(mode==="keep"&&E.base&&E.base.video)s.video={...E.base.video,start:(t0-E.video.offsetMs)/1000};
+  if(mode==="new"){try{const v=E.video;const meta=await storeVideo(id,s.name,v.blob,v.mime,(t0-v.offsetMs)/1000);if(meta)s.video=meta}catch(e){toast("Couldn't save the video ("+(e.message||e)+"). The standard is saved without it.")}}
   try{await Store.put("standards",s)}catch(e){toast("Couldn't save the standard: "+(e.message||e));return}
-  await loadStds();S.cur=S.stds.find(x=>x.id===s.id)||s;S.attempts=(await Store.byStd(s.id)).sort((a,b)=>b.created-a.created);toast("Standard saved");go("std")};
+  if(E.videoUrl){try{URL.revokeObjectURL(E.videoUrl)}catch(e){}E.videoUrl=null}E.video=null;
+  await loadStds();S.cur=S.stds.find(x=>x.id===s.id)||s;S.attempts=(await Store.byStd(s.id)).sort((a,b)=>b.created-a.created);toast("Standard saved");go("std")}
 
 /* ===== Review attempt (trim + who) ===== */
 const RV={rec:null,std:null,trim:[0,0],t:0,op:"",opId:"",
@@ -783,34 +1040,86 @@ ACT.resCsv=()=>{const a=Res.att,r=a.result;const rows=[["checked_by",a.checkedBy
   download("check-"+safeName(a.operator||"employee")+"-"+new Date(a.created).toISOString().slice(0,10)+".csv",toCsv(rows),"text/csv")};
 ACT.delAtt=async()=>{if(!confirm("Delete this employee check?"))return;await Store.del("attempts",Res.att.id,Res.att.stdId);S.attempts=S.attempts.filter(x=>x.id!==Res.att.id);go("std")};
 
+/* ===== Standard: header + tabs ===== */
+function stdHead(active){const s=S.cur;const T=[["std","Overview","grid"],["video","Video","play"],["jbs","Job breakdown","doc"],["vi","Visual instruction","image"]];
+  return`<div class="row"><button class="link" data-act="home">← All standards</button></div>
+  <div class="sthead"><div class="eyebrow">${esc(s.area||"Standard")}</div><h1>${esc(s.name)}</h1></div>
+  <nav class="tabs" aria-label="Standard sections">${T.map(([v,l,i])=>`<button class="${active===v?"on":""}" data-act="tab" data-v="${v}"${active===v?' aria-current="page"':""}>${ic(i)}<span>${l}</span></button>`).join("")}</nav>`}
+ACT.tab=d=>{if(S.view===d.v)return;if(d.v==="jbs"||d.v==="vi")JB.state="";go(d.v)};
+
+function vStd(){const s=S.cur;const smv=smvOf(s);
+  let h=stdHead("std")+`<p class="lead">Expert${s.expert?" "+esc(s.expert):""} · recorded ${fmtDate(s.created)}${s.createdBy?" by "+esc(s.createdBy):""}</p>
+  <div class="stats"><div class="stat"><b class="num">${fmtS(s.duration/1000)}</b><span>expert cycle time</span></div><div class="stat"><b class="num">${smv.toFixed(2)}</b><span>SMV (min) at ${s.rating||100}% rating, ${s.allow||0}% allowance</span></div><div class="stat"><b class="num">${s.elements.length}</b><span>steps</span></div><div class="stat"><b class="num">${S.attempts.length}</b><span>employee checks</span></div></div>
+  <div class="row"><button class="btn primary big" data-act="checkEmp">${ic("rec")}Check an employee</button></div>
+  <section class="panel"><div class="row between"><h2>Steps</h2>${s.video?`<span class="chip vid">Best-practice video</span>`:""}</div><div class="tbl-wrap"><table><thead><tr><th>#</th><th>Step</th><th class="r">Time</th><th class="r">Share</th><th>Key</th></tr></thead><tbody>${s.elements.map((e,i)=>`<tr><td class="num">${i+1}</td><td>${esc(e.name)}</td><td class="r num">${((e.end-e.start)/1000).toFixed(1)} s</td><td class="r num">${Math.round((e.end-e.start)/s.duration*100)}%</td><td>${e.key?"Yes":""}</td></tr>`).join("")}</tbody></table></div>
+  ${can("edit")?`<div class="row"><button class="btn sm" data-act="editStd">${ic("pen")}Edit steps</button><button class="btn sm" data-act="exportStd">${ic("share")}Save to Google Drive</button></div>`:""}</section>`;
+  h+=`<section class="panel"><div class="row between"><h2>Employee checks</h2>${S.attempts.length?'<button class="btn sm" data-act="histCsv">Download CSV</button>':""}</div>`;
+  if(!S.attempts.length)h+=`<p class="note">No checks yet. Tap Check an employee and record them doing the same task, with the camera in the same place as for the expert.</p>`;
+  else h+=`<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Employee</th><th>Checked by</th><th class="r">Time</th><th class="r">Performance</th><th class="r">Method match</th><th class="r">Missed</th></tr></thead><tbody>${S.attempts.map(a=>`<tr class="click" data-act="openAtt" data-id="${esc(a.id)}"><td>${fmtDate(a.created)}</td><td>${esc(a.operator||"—")}${a.opId?" · "+esc(a.opId):""}</td><td>${esc(a.checkedBy||"")}</td><td class="r num">${fmtS(a.result.summary.actTotal)}</td><td class="r num">${a.result.summary.perf}%</td><td class="r num">${a.result.summary.match}%</td><td class="r num" style="color:${a.result.summary.missed?"var(--miss)":"inherit"}">${a.result.summary.missed}</td></tr>`).join("")}</tbody></table></div>`;
+  h+=`</section>`+(can("delete")?`<section class="panel"><div class="row between"><span class="note">Deleting removes this standard, its checks and its best-practice video from the app. Copies in the Gallery stay.</span><button class="btn sm danger" data-act="delStd">${ic("trash")}Delete standard</button></div></section>`:"");
+  return h}
+
+/* ===== Best-practice video ===== */
+const BP={stepMode:true};
+function vVideo(){const s=S.cur;let h=stdHead("video");
+  if(!s.video)return h+`<section class="panel empty">${ic("play","lg")}<h2>No best-practice video</h2><p class="note">A video is kept when you record a new standard with the live camera (or from a video file) and choose <b>Save video</b> after naming the steps.</p></section>`;
+  h+=`<section class="panel flush">${vplayerHtml("bpPlayer","bpCap")}<div class="pad"><label class="check"><input type="checkbox" id="bpStep" data-change="bpStep"${BP.stepMode?" checked":""}> Stop at the end of each step</label></div></section>
+  <section class="panel"><h2>Steps</h2><div class="chapters">${s.elements.map((e,i)=>`<button class="chap" data-act="bpGo" data-i="${i}" id="chap${i}"><span class="n">${i+1}</span><span>${esc(e.name)} ${kpBadges(e)}</span><span class="num">${((e.end-e.start)/1000).toFixed(1)} s</span></button>`).join("")}</div></section>
+  <section class="panel"><div class="row">${s.video.gallery?`<button class="btn sm" data-act="bpShare">${ic("share")}Share video</button>`:""}${can("edit")&&!s.video.gallery&&NATIVE?`<button class="btn sm" data-act="bpGallery">Copy to Gallery</button>`:""}${can("delete")?`<button class="btn sm danger" data-act="bpDel">${ic("trash")}Delete video</button>`:""}</div>
+  <p class="note">${s.video.gallery?"Also in the phone's Gallery: "+esc(s.video.gallery.split("/").join(" › ")):"Not copied to the Gallery."} · ${(s.video.size/1048576).toFixed(1)} MB. Google Drive backups don't include videos; use Share video to put a copy on Drive.</p></section>`;
+  return h}
+async function mountVideo(){const s=S.cur;if(!s.video)return;const src=await videoSrc(s.video);if(S.view!=="video")return;if(!src){toast("Couldn't open the video file.");return}
+  const onT=t=>{const tt=Math.max(0,t-1);const k=s.elements.findIndex(e=>tt>=e.start&&tt<e.end);const cap=$("#bpCap");if(cap)cap.textContent=k>=0?(k+1)+". "+s.elements[k].name:"";
+    document.querySelectorAll(".chap").forEach((b,i)=>b.classList.toggle("on",i===k))};
+  player=new VPlayer($("#bpPlayer"),s.duration,src,-(s.video.start||0)*1000,onT,null);player.stops=BP.stepMode?s.elements.slice(0,-1).map(e=>e.end):null;player.seek(0)}
+ACT.bpStep=(d,el)=>{BP.stepMode=el.checked;if(player)player.stops=BP.stepMode?S.cur.elements.slice(0,-1).map(e=>e.end):null};
+ACT.bpGo=d=>{if(!player)return;const e=S.cur.elements[+d.i];player.pause();player.seek(e.start+1);player.play();window.scrollTo({top:0,behavior:"smooth"})};
+ACT.bpShare=async()=>{const v=S.cur.video;try{const r=await FS.getUri({path:v.gallery,directory:"EXTERNAL_STORAGE"});await NP.Share.share({title:S.cur.name,files:[r.uri]})}catch(e){if(!/cancel/i.test(String(e&&(e.message||e))))toast("Couldn't share the video: "+(e.message||e))}};
+ACT.bpGallery=async()=>{const s=S.cur;try{const src=await videoSrc(s.video);const blob=await (await fetch(src)).blob();const b=$("#busy");b.hidden=false;
+    const g="Movies/MotionStudy/"+safeName(s.name)+"_"+new Date().toISOString().slice(0,10)+"_"+s.id.slice(-4)+"."+(s.video.ext||"mp4");
+    await writeBlob(blob,g,"EXTERNAL_STORAGE",p=>{b.textContent="Copying to Gallery… "+Math.round(p*100)+"%"});b.hidden=true;b.textContent="Analyzing…";
+    s.video.gallery=g;const{factory,...x}=s;await Store.put("standards",x);toast("Copied to the Gallery");render()}
+  catch(e){$("#busy").hidden=true;toast("Couldn't copy to the Gallery: "+(e.message||e))}};
+ACT.bpDel=async()=>{if(!confirm("Delete the best-practice video from the app? The copy in the Gallery stays, and step pictures you already took stay."))return;
+  const s=S.cur;stopPlayer();await deleteVideoFile(s.video);delete s.video;const{factory,...x}=s;await Store.put("standards",x);toast("Video deleted");render()};
+
 /* ===== Job Breakdown Sheet ===== */
-const KPT={safety:{l:"Safety",s:"S",c:"#ff7b6b"},quality:{l:"Quality",s:"Q",c:"#e3a332"},technique:{l:"Technique",s:"T",c:"#6aa2df"},cost:{l:"Cost",s:"C",c:"#3dbd83"}};
+const KPT={safety:{l:"Safety",s:"S",c:"#d1352a"},quality:{l:"Quality",s:"Q",c:"#b9650a"},technique:{l:"Technique",s:"T",c:"#2d6cd1"},cost:{l:"Cost",s:"C",c:"#178a4a"}};
 const JB={timer:null,state:""};
 function jbsOf(s){if(!s.jbs)s.jbs={part:"",tools:"",ppe:"",docNo:"",rev:"",preparedBy:s.expert||"",approvedBy:"",date:new Date().toISOString().slice(0,10)};return s.jbs}
 const smvOf=s=>(s.duration/1000)*(s.rating||100)/100*(1+(s.allow||0)/100)/60;
-function vJbs(){const s=S.cur,j=jbsOf(s);
-  const f=(k,l,ph)=>`<div class="field"><label class="lbl" for="jh-${k}">${l}</label><input type="text" id="jh-${k}" value="${esc(j[k]||"")}" data-input="jbsH" data-f="${k}" placeholder="${esc(ph||"")}"></div>`;
-  let h=`<div class="row"><button class="link" data-act="backStd">← ${esc(s.name)}</button></div>
-  <div><div class="eyebrow">Job Breakdown Sheet</div><h1>${esc(s.name)}</h1><p class="lead">Steps and times come from the expert recording. Add the key points (how) and reasons (why) for each step, plus photos if useful. Changes save by themselves.</p></div>
-  <div class="row between"><div class="row"><button class="btn sm primary" data-act="jbsPdf">PDF</button><button class="btn sm" data-act="jbsXls">Excel</button></div><span class="savestate" id="jbsState">${esc(JB.state)}</span></div>
-  <section class="panel"><h2>Sheet header</h2><div class="grid">
+function picControls(i,e){const s=S.cur;if(!can("edit"))return"";
+  return`<div class="row">${s.video?`<button class="btn sm primary" data-act="grab" data-i="${i}">${ic("camera")}Take step picture</button>`:""}<label class="btn sm" for="pc-${S.view}-${i}">${ic("camera")}Photo</label><input type="file" id="pc-${S.view}-${i}" accept="image/*" capture="environment" data-change="jbsPhoto" data-i="${i}" hidden><label class="btn sm" for="pg-${S.view}-${i}">From phone</label><input type="file" id="pg-${S.view}-${i}" accept="image/*" data-change="jbsPhoto" data-i="${i}" hidden>${e.photo?`<button class="btn sm" data-act="markup" data-i="${i}">${ic("pen")}Mark up</button><button class="btn sm danger" data-act="jbsPhotoDel" data-i="${i}">Remove</button>`:""}</div>`}
+function headerFields(){const j=jbsOf(S.cur);const f=(k,l,ph)=>`<div class="field"><label class="lbl" for="jh-${k}">${l}</label><input type="text" id="jh-${k}" value="${esc(j[k]||"")}" data-input="jbsH" data-f="${k}" placeholder="${esc(ph||"")}"></div>`;
+  return`<details class="panel more"${JB.hdrOpen?" open":""} id="hdrBox"><summary><h2 style="display:inline">Sheet header</h2></summary><div class="grid">
   ${f("part","Part / product","e.g. Denim 3/1 twill")}${f("tools","Tools & materials","e.g. Knotter, scissors")}${f("ppe","Safety equipment (PPE)","e.g. Gloves, ear plugs")}
   ${f("docNo","Document no.","")}${f("rev","Revision","")}${f("date","Date","YYYY-MM-DD")}${f("preparedBy","Prepared by","")}${f("approvedBy","Approved by","")}</div>
-  <p class="note">Operation: <b>${esc(s.name)}</b> · Department: <b>${esc(s.area||"—")}</b> · Cycle time <b class="num">${fmtS(s.duration/1000)}</b> · SMV <b class="num">${smvOf(s).toFixed(2)}</b> min</p></section>`;
+  <p class="note">Shared by the Job Breakdown Sheet and the Visual Instruction. Operation, department, cycle time and SMV come from the standard.</p></details>`}
+function docBar(kind){return`<div class="row between">${docLangSeg()}<div class="row"><button class="btn sm primary" data-act="${kind}Pdf">${ic("pdf")}PDF</button>${kind==="jbs"?`<button class="btn sm" data-act="jbsXls">${ic("xls")}Excel</button>`:""}<span class="savestate" id="jbsState">${esc(JB.state)}</span></div></div>`}
+function vJbs(){const s=S.cur;
+  let h=stdHead("jbs")+`<p class="lead">Steps and times come from the expert recording. Add key points (how) and reasons (why) for each step. Changes save by themselves, and you can come back and edit any time.</p>`+docBar("jbs")+headerFields();
   s.elements.forEach((e,i)=>{const kt=e.kpType||[];
-    h+=`<section class="panel jstep"><div class="row between"><h2>Step ${i+1}</h2><span class="num note">${((e.end-e.start)/1000).toFixed(1)} s</span></div>
+    h+=`<section class="panel jstep"><div class="row between"><h2><span class="sn">${i+1}</span>${esc(e.name)}</h2><span class="num note">${((e.end-e.start)/1000).toFixed(1)} s</span></div>
     <div class="field"><label class="lbl" for="js-n${i}">Important step (what is done)</label><input type="text" id="js-n${i}" value="${esc(e.name)}" data-input="jbsE" data-i="${i}" data-f="name"></div>
     <div class="field"><span class="lbl">Key point type</span><div class="row">${Object.entries(KPT).map(([k,v])=>`<button class="kchip${kt.includes(k)?" on":""}" style="--c:${v.c}" data-act="kpType" data-i="${i}" data-k="${k}" aria-pressed="${kt.includes(k)}">${v.l}</button>`).join("")}</div></div>
     <div class="field"><label class="lbl" for="js-k${i}">Key points (how to do it right)</label><textarea id="js-k${i}" data-input="jbsE" data-i="${i}" data-f="kp" placeholder="e.g. Hold the yarn end 5 cm from the knotter; check tension before closing">${esc(e.kp||"")}</textarea></div>
     <div class="field"><label class="lbl" for="js-w${i}">Reasons (why)</label><textarea id="js-w${i}" data-input="jbsE" data-i="${i}" data-f="why" placeholder="e.g. Avoids loose knots that break in weaving">${esc(e.why||"")}</textarea></div>
-    ${e.photo?`<img class="ph" src="${e.photo}" alt="Photo for step ${i+1}"><div class="row"><button class="btn sm danger" data-act="jbsPhotoDel" data-i="${i}">Remove photo</button></div>`
-      :`<div class="row"><label class="btn sm" for="jp-c${i}">Take photo</label><input type="file" id="jp-c${i}" accept="image/*" capture="environment" data-change="jbsPhoto" data-i="${i}" hidden><label class="btn sm" for="jp-g${i}">Choose photo</label><input type="file" id="jp-g${i}" accept="image/*" data-change="jbsPhoto" data-i="${i}" hidden></div>`}
-    </section>`});
-  h+=`<div class="row"><button class="btn primary big" data-act="jbsPdf">Make PDF</button><button class="btn big" data-act="jbsXls">Make Excel</button></div>
-  <p class="note">Safety or Quality key points also mark the step as a key point, so it is flagged red if an employee misses it.</p>`;
-  return h;
-}
-function mountJbs(){if(!can("edit")){document.querySelectorAll("#app input,#app textarea").forEach(x=>x.disabled=true);document.querySelectorAll("#app .kchip,#app label.btn,#app [data-act=jbsPhotoDel]").forEach(x=>x.style.display="none")}document.querySelectorAll(".jstep textarea").forEach(t=>{t.style.height="auto";t.style.height=(t.scrollHeight+2)+"px"})}
+    ${e.photo?`<div class="picbox small"><canvas class="phc" data-i="${i}"></canvas></div>`:""}${picControls(i,e)}</section>`});
+  h+=`<div class="row"><button class="btn primary big" data-act="jbsPdf">${ic("pdf")}Make PDF</button><button class="btn big" data-act="jbsXls">${ic("xls")}Make Excel</button></div>
+  <p class="note">Safety or Quality key points also mark the step as a key point, so it is flagged red if an employee misses it. The step picture is shared with the Visual Instruction.</p>`;
+  return h}
+function vVi(){const s=S.cur;
+  let h=stdHead("vi")+`<p class="lead">A picture card for each step, 6 per page, to post at the workplace. ${s.video?"Take each picture from the best-practice video, then mark it with arrows, circles or boxes.":"Add a photo for each step, then mark it with arrows, circles or boxes."} Everything here is optional and can be changed later.</p>`+docBar("vi")+headerFields();
+  s.elements.forEach((e,i)=>{const ph=(e.kp||"").split("\n")[0];
+    h+=`<section class="panel vistep"><div class="row between"><h2><span class="sn">${i+1}</span>${esc(e.name)}</h2><span>${kpBadges(e)}</span></div>
+    <div class="picbox">${e.photo?`<canvas class="phc" data-i="${i}"></canvas>`:`<div class="nopic">${ic("image","lg")}<span>No picture yet</span></div>`}</div>${picControls(i,e)}
+    <div class="field"><label class="lbl" for="vt${i}">Instruction on the card</label><textarea id="vt${i}" data-input="jbsE" data-i="${i}" data-f="viText" placeholder="${esc(ph||"Short instruction, e.g. Hold the bobbin by the top flange")}">${esc(e.viText||"")}</textarea>
+    <span class="note">${ph?"Leave empty to use the first key point from the Job Breakdown Sheet.":"Short and clear: what to do and what to watch for."}</span></div></section>`});
+  h+=`<div class="row"><button class="btn primary big" data-act="viPdf">${ic("pdf")}Make PDF</button></div>`;
+  return h}
+function mountJbs(){if(!can("edit")){document.querySelectorAll("#app input[data-input],#app textarea").forEach(x=>x.disabled=true);document.querySelectorAll("#app .kchip").forEach(x=>x.disabled=true)}
+  document.querySelectorAll(".jstep textarea,.vistep textarea").forEach(t=>{t.style.height="auto";t.style.height=(t.scrollHeight+2)+"px"});
+  const hb=$("#hdrBox");if(hb)hb.addEventListener("toggle",()=>{JB.hdrOpen=hb.open});drawPhotoCanvases()}
 function jbsMark(){JB.state="Saving…";const el=$("#jbsState");if(el)el.textContent=JB.state;clearTimeout(JB.timer);JB.timer=setTimeout(jbsFlush,700)}
 async function jbsFlush(){if(!JB.timer)return;clearTimeout(JB.timer);JB.timer=null;
   try{const{factory,...x}=S.cur;x.jbsUpdated=Date.now();await Store.put("standards",x);JB.state="Saved ✓"}catch(e){JB.state="Couldn't save"}
@@ -818,24 +1127,25 @@ async function jbsFlush(){if(!JB.timer)return;clearTimeout(JB.timer);JB.timer=nu
 ACT.openJbs=()=>{JB.state="";go("jbs")};
 ACT.jbsH=(d,el)=>{jbsOf(S.cur)[d.f]=el.value;jbsMark()};
 ACT.jbsE=(d,el)=>{const e=S.cur.elements[+d.i];e[d.f]=el.value;if(el.tagName==="TEXTAREA"){el.style.height="auto";el.style.height=(el.scrollHeight+2)+"px"}jbsMark()};
-ACT.kpType=(d,b)=>{const e=S.cur.elements[+d.i];const kt=new Set(e.kpType||[]);kt.has(d.k)?kt.delete(d.k):kt.add(d.k);e.kpType=[...kt];
+ACT.kpType=(d,b)=>{if(!can("edit"))return;const e=S.cur.elements[+d.i];const kt=new Set(e.kpType||[]);kt.has(d.k)?kt.delete(d.k):kt.add(d.k);e.kpType=[...kt];
   if(kt.has("safety")||kt.has("quality"))e.key=true;b.classList.toggle("on",kt.has(d.k));b.setAttribute("aria-pressed",String(kt.has(d.k)));jbsMark()};
-ACT.jbsPhoto=(d,el)=>{const file=el.files&&el.files[0];if(!file)return;const fr=new FileReader();fr.onload=()=>{const img=new Image();img.onload=()=>{
-    const m=900,r=Math.min(1,m/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
-    c.getContext("2d").drawImage(img,0,0,c.width,c.height);S.cur.elements[+d.i].photo=c.toDataURL("image/jpeg",0.72);jbsMark();const y=window.scrollY;render();window.scrollTo(0,y)};
-    img.onerror=()=>toast("Couldn't read that photo.");img.src=fr.result};fr.readAsDataURL(file)};
-ACT.jbsPhotoDel=d=>{delete S.cur.elements[+d.i].photo;jbsMark();const y=window.scrollY;render();window.scrollTo(0,y)};
+ACT.jbsPhoto=(d,el)=>{const file=el.files&&el.files[0];if(!file)return;const i=+d.i;const fr=new FileReader();fr.onload=()=>{loadImg(fr.result).then(img=>{
+    const r=Math.min(1,1280/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*r);c.height=Math.round(img.height*r);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);const e=S.cur.elements[i];e.photo=c.toDataURL("image/jpeg",0.82);e.marks=[];jbsMark();openMarkup(i)}).catch(()=>toast("Couldn't read that photo."))};fr.readAsDataURL(file)};
+ACT.jbsPhotoDel=d=>{const e=S.cur.elements[+d.i];delete e.photo;delete e.marks;jbsMark();const y=window.scrollY;render();window.scrollTo(0,y)};
 
-const JCSS=`.jp{width:1123px;height:794px;background:#fff;color:#111;font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;line-height:1.35;padding:26px 30px 34px;box-sizing:border-box;position:relative;overflow:hidden}
-.jp h1{font-family:"Barlow Condensed","Arial Narrow",sans-serif;font-size:26px;line-height:1;margin:0 0 8px;letter-spacing:.03em;text-transform:uppercase;color:#111}
+const DOCFONT=`"IBM Plex Sans","Noto Sans Bengali",system-ui,sans-serif`;
+const JCSS=`.jp{width:1123px;height:794px;background:#fff;color:#111;font-family:${DOCFONT};font-size:11px;line-height:1.35;padding:26px 30px 34px;box-sizing:border-box;position:relative;overflow:hidden}
+.jp h1{font-family:"Barlow Condensed","Noto Sans Bengali","Arial Narrow",sans-serif;font-size:26px;line-height:1.05;margin:0 0 8px;letter-spacing:.02em;text-transform:uppercase;color:#111}
 .jp h1 small{font-size:15px;color:#555;margin-left:8px}
 .jp .hd{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #333;border-left:1px solid #333;margin-bottom:10px}
 .jp .hd div{border-right:1px solid #333;border-bottom:1px solid #333;padding:4px 6px;min-height:30px}
-.jp .hd b{display:block;font-size:8.5px;text-transform:uppercase;letter-spacing:.06em;color:#555;font-weight:600}
+.jp .hd b{display:block;font-size:8.5px;letter-spacing:.03em;color:#555;font-weight:600}
 .jp table{border-collapse:separate;border-spacing:0;width:100%;table-layout:fixed;border-top:1px solid #333;border-left:1px solid #333}
-.jp .tw{border-bottom:1px solid #333;padding-bottom:0}
+.jp .tw{border-bottom:1px solid #333}
 .jp tbody tr:last-child td{border-bottom:0}
-.jp th{background:#dfeceb;border-right:1px solid #333;border-bottom:1px solid #333;padding:5px;font-size:9.5px;text-transform:uppercase;letter-spacing:.04em;text-align:left}
+.jp th{background:#dcefeb;border-right:1px solid #333;border-bottom:1px solid #333;padding:5px;font-size:9.5px;text-align:left;font-weight:700}
+.jp th .bn,.jp .hd .bn{font-weight:600}
 .jp td{border-right:1px solid #333;border-bottom:1px solid #333;padding:5px;vertical-align:top;white-space:pre-wrap;overflow-wrap:anywhere}
 .jp td.n,.jp td.t{text-align:center;font-family:"IBM Plex Mono",monospace}
 .jp .tag{display:inline-block;font-size:8.5px;font-weight:700;border-radius:3px;padding:0 4px;color:#fff;margin:0 3px 3px 0;white-space:nowrap}
@@ -843,58 +1153,99 @@ const JCSS=`.jp{width:1123px;height:794px;background:#fff;color:#111;font-family
 .jp .sg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:40px;margin-top:22px;font-size:10px}
 .jp .sg div{border-top:1px solid #333;padding-top:4px}
 .jp .ft{position:absolute;left:30px;right:30px;bottom:12px;display:flex;justify-content:space-between;font-size:9px;color:#555}`;
+const kpTag=k=>`<span class="tag" style="background:${KPT[k].c}">${esc(L(k))}</span>`;
 function jbsHeadHtml(s,j,first){
-  if(!first)return`<h1>Job Breakdown Sheet<small>${esc(s.name)} (continued)</small></h1>`;
-  const c=(l,v)=>`<div><b>${l}</b>${esc(v||"")}</div>`;
-  return`<h1>Job Breakdown Sheet</h1><div class="hd">${c("Operation",s.name)}${c("Department / line",s.area)}${c("Part / product",j.part)}${c("Tools & materials",j.tools)}
-  ${c("Safety equipment (PPE)",j.ppe)}${c("Cycle time / SMV",fmtS(s.duration/1000)+" / "+smvOf(s).toFixed(2)+" min")}${c("Document no. / Rev.",[j.docNo,j.rev].filter(Boolean).join(" / "))}${c("Date",j.date)}</div>`}
-function jbsRowHtml(e,i){const tags=(e.kpType||[]).map(k=>`<span class="tag" style="background:${KPT[k].c}">${KPT[k].l}</span>`).join("");
-  return`<tr><td class="n">${i+1}</td><td><b>${esc(e.name)}</b></td><td>${tags?tags+"<br>":""}${esc(e.kp||"")}</td><td>${esc(e.why||"")}</td><td class="t">${((e.end-e.start)/1000).toFixed(1)}</td><td>${e.photo?`<img src="${e.photo}">`:""}</td></tr>`}
-const JTHEAD=`<thead><tr><th style="width:34px">No.</th><th style="width:200px">Important step<br>(what)</th><th>Key points<br>(how)</th><th style="width:250px">Reasons<br>(why)</th><th style="width:54px">Time s</th><th style="width:130px">Photo</th></tr></thead>`;
+  if(!first)return`<h1>${esc(L("jbs"))}<small>${esc(s.name)} (${esc(L("cont"))})</small></h1>`;
+  const c=(k,v)=>`<div><b>${L2(k)}</b>${esc(v||"")}</div>`;
+  return`<h1>${esc(L("jbs"))}</h1><div class="hd">${c("op",s.name)}${c("dept",s.area)}${c("part",j.part)}${c("tools",j.tools)}
+  ${c("ppe",j.ppe)}${c("ct",fmtS(s.duration/1000)+" / "+smvOf(s).toFixed(2)+" min")}${c("doc",[j.docNo,j.rev].filter(Boolean).join(" / "))}${c("date",j.date)}</div>`}
+function jbsRowHtml(e,i,pic){const tags=(e.kpType||[]).map(kpTag).join("");
+  return`<tr><td class="n">${i+1}</td><td><b>${esc(e.name)}</b></td><td>${tags?tags+"<br>":""}${esc(e.kp||"")}</td><td>${esc(e.why||"")}</td><td class="t">${((e.end-e.start)/1000).toFixed(1)}</td><td>${pic?`<img src="${pic}">`:""}</td></tr>`}
+const jthead=()=>`<thead><tr><th style="width:38px">${L2("no")}</th><th style="width:200px">${L2("what")}</th><th>${L2("how")}</th><th style="width:250px">${L2("why")}</th><th style="width:58px">${L2("time")}</th><th style="width:130px">${L2("photo")}</th></tr></thead>`;
+const usedH=pg=>{let m=0;for(const c of pg.children){if(c.tagName==="STYLE"||c.classList.contains("ft"))continue;m=Math.max(m,c.offsetTop+c.offsetHeight)}return m};
 async function buildJbsPages(){
-  const s=S.cur,j=jbsOf(s);const host=document.createElement("div");host.style.cssText="position:fixed;left:-20000px;top:0;z-index:-1";
-  host.innerHTML=`<style>${JCSS}</style>`;document.body.appendChild(host);
-  const pages=[];const newPage=first=>{const p=document.createElement("div");p.className="jp";p.innerHTML=jbsHeadHtml(s,j,first)+`<div class="tw"><table>${JTHEAD}<tbody></tbody></table></div>`;host.appendChild(p);pages.push(p);return p};
+  const s=S.cur,j=jbsOf(s);const pics=await Promise.all(s.elements.map(e=>photoOut(e).catch(()=>null)));
+  const host=document.createElement("div");host.style.cssText="position:fixed;left:-20000px;top:0;z-index:-1";host.innerHTML=`<style>${JCSS}</style>`;document.body.appendChild(host);
+  const pages=[];const newPage=first=>{const p=document.createElement("div");p.className="jp";p.innerHTML=jbsHeadHtml(s,j,first)+`<div class="tw"><table>${jthead()}<tbody></tbody></table></div>`;host.appendChild(p);pages.push(p);return p};
   let p=newPage(true);const LIM=794-34;
-  // height actually used by the content (the page box itself is fixed at A4 height)
-  const used=pg=>{let m=0;for(const c of pg.children){if(c.tagName==="STYLE"||c.classList.contains("ft"))continue;m=Math.max(m,c.offsetTop+c.offsetHeight)}return m};
-  const imgs=[];
-  for(let i=0;i<s.elements.length;i++){const tb=p.querySelector("tbody");tb.insertAdjacentHTML("beforeend",jbsRowHtml(s.elements[i],i));
+  for(let i=0;i<s.elements.length;i++){const tb=p.querySelector("tbody");tb.insertAdjacentHTML("beforeend",jbsRowHtml(s.elements[i],i,pics[i]));
     const im=tb.lastElementChild.querySelector("img");if(im&&!im.complete)await new Promise(r=>{im.onload=im.onerror=r});
-    if(used(p)>LIM&&tb.children.length>1){tb.lastElementChild.remove();p=newPage(false);i--}}
-  const sig=`<div class="sg"><div>Prepared by: ${esc(j.preparedBy||"")}</div><div>Approved by: ${esc(j.approvedBy||"")}</div><div>Key point types: ${Object.values(KPT).map(v=>v.l).join(", ")}</div></div>`;
-  p.insertAdjacentHTML("beforeend",sig);if(used(p)>LIM){p.lastElementChild.remove();p=newPage(false);p.querySelector(".tw").remove();p.insertAdjacentHTML("beforeend",sig)}
-  pages.forEach((pg,k)=>pg.insertAdjacentHTML("beforeend",`<div class="ft"><span>Motion Study · ${esc(s.name)}</span><span>Page ${k+1} of ${pages.length}</span></div>`));
+    if(usedH(p)>LIM&&tb.children.length>1){tb.lastElementChild.remove();p=newPage(false);i--}}
+  const sig=`<div class="sg"><div>${esc(L("prep"))}: ${esc(j.preparedBy||"")}</div><div>${esc(L("appr"))}: ${esc(j.approvedBy||"")}</div><div>${esc(L("kpt"))}: ${Object.keys(KPT).map(k=>esc(L(k))).join(", ")}</div></div>`;
+  p.insertAdjacentHTML("beforeend",sig);if(usedH(p)>LIM){p.lastElementChild.remove();p=newPage(false);p.querySelector(".tw").remove();p.insertAdjacentHTML("beforeend",sig)}
+  pages.forEach((pg,k)=>pg.insertAdjacentHTML("beforeend",`<div class="ft"><span>Motion Study · ${esc(s.name)}</span><span>${esc(pageLbl(k+1,pages.length))}</span></div>`));
   return{host,pages}}
+async function pagesToPdf(pages,fileName){await loadLib("jspdf");await loadLib("html2canvas");try{await document.fonts.ready}catch(e){}
+  const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
+  for(let k=0;k<pages.length;k++){const c=await window.html2canvas(pages[k],{scale:2,backgroundColor:"#ffffff",logging:false});if(k)pdf.addPage();pdf.addImage(c.toDataURL("image/jpeg",0.9),"JPEG",0,0,297,210)}
+  $("#busy").hidden=true;await shareBinary(fileName,pdf.output("datauristring").split(",")[1],"application/pdf")}
 ACT.jbsPdf=async()=>{await jbsFlush();const b=$("#busy");b.textContent="Making PDF…";b.hidden=false;let host=null;
-  try{await Promise.all([loadLib("jspdf"),loadLib("html2canvas")]);try{await document.fonts.ready}catch(e){}
-    const r=await buildJbsPages();host=r.host;const pdf=new window.jspdf.jsPDF({orientation:"landscape",unit:"mm",format:"a4"});
-    for(let k=0;k<r.pages.length;k++){const c=await window.html2canvas(r.pages[k],{scale:2,backgroundColor:"#ffffff",logging:false});if(k)pdf.addPage();pdf.addImage(c.toDataURL("image/jpeg",0.9),"JPEG",0,0,297,210)}
-    b.hidden=true;await shareBinary("JBS-"+safeName(S.cur.name)+".pdf",pdf.output("datauristring").split(",")[1],"application/pdf")}
-  catch(e){b.hidden=true;toast("Couldn't make the PDF: "+(e.message||e))}finally{if(host)host.remove()}};
+  try{await Promise.all([loadLib("jspdf"),loadLib("html2canvas")]);const r=await buildJbsPages();host=r.host;await pagesToPdf(r.pages,"JBS-"+safeName(S.cur.name)+".pdf")}
+  catch(e){b.hidden=true;toast("Couldn't make the PDF: "+(e.message||e))}finally{if(host)host.remove();b.hidden=true}};
 ACT.jbsXls=async()=>{await jbsFlush();const b=$("#busy");b.textContent="Making Excel…";b.hidden=false;
   try{await loadLib("exceljs");const s=S.cur,j=jbsOf(s),X=window.ExcelJS;const wb=new X.Workbook();wb.creator="Motion Study";
+    const pics=await Promise.all(s.elements.map(e=>photoOut(e).catch(()=>null)));
     const ws=wb.addWorksheet("Job Breakdown Sheet",{pageSetup:{paperSize:9,orientation:"landscape",fitToPage:true,fitToWidth:1,fitToHeight:0,margins:{left:.4,right:.4,top:.5,bottom:.5,header:.2,footer:.2}}});
-    ws.columns=[{width:6},{width:30},{width:14},{width:48},{width:36},{width:9},{width:22}];
+    ws.columns=[{width:7},{width:30},{width:16},{width:48},{width:36},{width:10},{width:22}];
     const thin={style:"thin",color:{argb:"FF333333"}},box={top:thin,left:thin,bottom:thin,right:thin};
-    ws.mergeCells("A1:G1");const t=ws.getCell("A1");t.value="JOB BREAKDOWN SHEET";t.font={bold:true,size:16};ws.getRow(1).height=26;
-    const hd=[["Operation",s.name,"Department / line",s.area],["Part / product",j.part,"Tools & materials",j.tools],["Safety equipment (PPE)",j.ppe,"Cycle time / SMV",fmtS(s.duration/1000)+" / "+smvOf(s).toFixed(2)+" min"],["Document no. / Rev.",[j.docNo,j.rev].filter(Boolean).join(" / "),"Date",j.date]];
+    ws.mergeCells("A1:G1");const t=ws.getCell("A1");t.value=L("jbs");t.font={bold:true,size:16};ws.getRow(1).height=26;
+    const hd=[[L("op"),s.name,L("dept"),s.area],[L("part"),j.part,L("tools"),j.tools],[L("ppe"),j.ppe,L("ct"),fmtS(s.duration/1000)+" / "+smvOf(s).toFixed(2)+" min"],[L("doc"),[j.docNo,j.rev].filter(Boolean).join(" / "),L("date"),j.date]];
     hd.forEach((r,k)=>{const n=k+2;ws.mergeCells(`A${n}:B${n}`);ws.mergeCells(`C${n}:D${n}`);ws.mergeCells(`F${n}:G${n}`);
-      ws.getCell(`A${n}`).value=r[0];ws.getCell(`C${n}`).value=r[1]||"";ws.getCell(`E${n}`).value=r[2];ws.getCell(`F${n}`).value=r[3]||"";
-      for(const c of["A","E"])ws.getCell(c+n).font={bold:true,size:9,color:{argb:"FF555555"}};for(const c of["A","B","C","D","E","F","G"])ws.getCell(c+n).border=box});
-    const H=7;const hr=ws.getRow(H);hr.values=["No.","Important step (what)","Key point type","Key points (how)","Reasons (why)","Time s","Photo"];hr.height=30;
-    hr.eachCell(c=>{c.font={bold:true};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFDFECEB"}};c.border=box;c.alignment={vertical:"middle",wrapText:true}});
-    s.elements.forEach((e,i)=>{const n=H+1+i,r=ws.getRow(n);r.values=[i+1,e.name,(e.kpType||[]).map(k=>KPT[k].l).join(", "),e.kp||"",e.why||"",+((e.end-e.start)/1000).toFixed(1),""];
+      ws.getCell(`A${n}`).value=r[0];ws.getCell(`C${n}`).value=r[1]||"";ws.getCell(`E${n}`).value=r[2];ws.getCell(`F${n}`).value=r[3]||"";ws.getRow(n).height=DL==="both"?30:18;
+      for(const c of["A","E"]){ws.getCell(c+n).font={bold:true,size:9,color:{argb:"FF555555"}};ws.getCell(c+n).alignment={wrapText:true,vertical:"top"}}for(const c of["A","B","C","D","E","F","G"])ws.getCell(c+n).border=box});
+    const H=7;const hr=ws.getRow(H);hr.values=[L("no"),L("what"),L("kptype"),L("how"),L("why"),L("time"),L("photo")];hr.height=DL==="both"?36:24;
+    hr.eachCell(c=>{c.font={bold:true};c.fill={type:"pattern",pattern:"solid",fgColor:{argb:"FFDCEFEB"}};c.border=box;c.alignment={vertical:"middle",wrapText:true}});
+    s.elements.forEach((e,i)=>{const n=H+1+i,r=ws.getRow(n);r.values=[i+1,e.name,(e.kpType||[]).map(k=>L(k)).join(", "),e.kp||"",e.why||"",+((e.end-e.start)/1000).toFixed(1),""];
       const lines=Math.max(2,...[e.kp||"",e.why||"",e.name].map(x=>Math.ceil(String(x).length/40)+String(x).split("\n").length-1));
-      r.height=Math.max(e.photo?78:18,lines*15);r.eachCell({includeEmpty:true},c=>{c.border=box;c.alignment={vertical:"top",wrapText:true}});
+      r.height=Math.max(pics[i]?78:18,lines*15);r.eachCell({includeEmpty:true},c=>{c.border=box;c.alignment={vertical:"top",wrapText:true}});
       r.getCell(1).alignment={vertical:"top",horizontal:"center"};
-      if(e.photo){const id=wb.addImage({base64:e.photo,extension:"jpeg"});ws.addImage(id,{tl:{col:6.05,row:n-1+0.05},ext:{width:140,height:96}});if(r.height<76)r.height=76}});
-    const end=H+s.elements.length+2;ws.getCell(`B${end}`).value="Prepared by: "+(j.preparedBy||"");ws.getCell(`D${end}`).value="Approved by: "+(j.approvedBy||"");
-    ws.getCell(`B${end}`).border={top:thin};ws.getCell(`D${end}`).border={top:thin};
-    ws.views=[{state:"frozen",ySplit:H}];
+      if(pics[i]){const id=wb.addImage({base64:pics[i],extension:"jpeg"});ws.addImage(id,{tl:{col:6.05,row:n-1+0.05},ext:{width:140,height:96}});if(r.height<76)r.height=76}});
+    const end=H+s.elements.length+2;ws.getCell(`B${end}`).value=L("prep")+": "+(j.preparedBy||"");ws.getCell(`D${end}`).value=L("appr")+": "+(j.approvedBy||"");
+    ws.getCell(`B${end}`).border={top:thin};ws.getCell(`D${end}`).border={top:thin};ws.views=[{state:"frozen",ySplit:H}];
     const buf=await wb.xlsx.writeBuffer();b.hidden=true;
     await shareBinary("JBS-"+safeName(s.name)+".xlsx",abToB64(buf),"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")}
   catch(e){b.hidden=true;toast("Couldn't make the Excel file: "+(e.message||e))}};
+
+/* ===== Visual Instruction PDF: 6 step cards per A4 landscape page ===== */
+const VCSS=`.vp{width:1123px;height:794px;background:#fff;color:#111;font-family:${DOCFONT};font-size:11px;line-height:1.35;padding:20px 24px 30px;box-sizing:border-box;position:relative;overflow:hidden}
+.vp .vh{display:grid;grid-template-columns:330px 1fr;gap:12px;margin-bottom:10px;height:96px}
+.vp .vt{background:#0d7a71;color:#fff;border-radius:8px;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;overflow:hidden}
+.vp .vt h1{font-family:"Barlow Condensed","Noto Sans Bengali","Arial Narrow",sans-serif;font-size:21px;line-height:1.1;margin:0;text-transform:uppercase;letter-spacing:.02em}
+.vp .vt .op{font-size:15px;font-weight:700;margin-top:4px;line-height:1.2}
+.vp .meta{display:grid;grid-template-columns:repeat(4,1fr);grid-auto-rows:1fr;border-top:1px solid #333;border-left:1px solid #333}
+.vp .meta div{border-right:1px solid #333;border-bottom:1px solid #333;padding:3px 6px;font-size:10.5px;overflow:hidden}
+.vp .meta b{display:block;font-size:8px;color:#555;font-weight:600;line-height:1.2}
+.vp .cards{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:10px;height:630px}
+.vp .card{border:1.5px solid #2b3a37;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;min-height:0}
+.vp .ch{display:flex;align-items:center;gap:8px;padding:5px 8px;background:#e6f1ef;border-bottom:1.5px solid #2b3a37}
+.vp .sn{width:26px;height:26px;border-radius:50%;background:#0d7a71;color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;flex:none;font-family:"IBM Plex Mono",monospace}
+.vp .nm{font-weight:700;font-size:12.5px;line-height:1.2;flex:1;overflow:hidden;max-height:31px}
+.vp .tm{font-family:"IBM Plex Mono",monospace;font-size:10px;color:#444;white-space:nowrap}
+.vp .pic{height:196px;background:#eef1ef;display:flex;align-items:center;justify-content:center;border-bottom:1px solid #c9d3cf}
+.vp .pic img{width:100%;height:196px;display:block}
+.vp .np{color:#8a9592;font-size:12px}
+.vp .tx{padding:6px 8px 2px;font-size:11.5px;white-space:pre-wrap;overflow:hidden;flex:1;min-height:0}
+.vp .tags{padding:0 8px 6px}
+.vp .tag{display:inline-block;font-size:8.5px;font-weight:700;border-radius:3px;padding:1px 5px;color:#fff;margin:0 3px 2px 0}
+.vp .card.empty{border-style:dashed;border-color:#c9d3cf}
+.vp .ft{position:absolute;left:24px;right:24px;bottom:10px;display:flex;justify-content:space-between;font-size:9px;color:#555}`;
+async function buildViPages(){const s=S.cur,j=jbsOf(s);const pics=await Promise.all(s.elements.map(e=>photoOut(e,680,392).catch(()=>null)));
+  const host=document.createElement("div");host.style.cssText="position:fixed;left:-20000px;top:0;z-index:-1";host.innerHTML=`<style>${VCSS}</style>`;document.body.appendChild(host);
+  const m=(k,v)=>`<div><b>${L2(k)}</b>${esc(v||"")}</div>`;
+  const head=`<div class="vh"><div class="vt"><h1>${esc(L("vi"))}</h1><div class="op">${esc(s.name)}</div></div><div class="meta">${m("dept",s.area)}${m("part",j.part)}${m("ppe",j.ppe)}${m("ct",fmtS(s.duration/1000)+" / "+smvOf(s).toFixed(2)+" min")}${m("doc",[j.docNo,j.rev].filter(Boolean).join(" / "))}${m("date",j.date)}${m("prep",j.preparedBy)}${m("appr",j.approvedBy)}</div></div>`;
+  const n=s.elements.length,np=Math.max(1,Math.ceil(n/6)),pages=[];
+  for(let p=0;p<np;p++){const pg=document.createElement("div");pg.className="vp";let cards="";
+    for(let k=0;k<6;k++){const i=p*6+k;if(i>=n){cards+=`<div class="card empty"></div>`;continue}const e=s.elements[i];
+      const text=(e.viText||"").trim()||(e.kp||"").split("\n").slice(0,3).join("\n");
+      cards+=`<div class="card"><div class="ch"><span class="sn">${i+1}</span><span class="nm">${esc(e.name)}</span><span class="tm">${((e.end-e.start)/1000).toFixed(1)} s</span></div>
+        <div class="pic">${pics[i]?`<img src="${pics[i]}">`:`<span class="np">${esc(L("nopic"))}</span>`}</div><div class="tx">${esc(text)}</div><div class="tags">${(e.kpType||[]).map(kpTag).join("")}</div></div>`}
+    pg.innerHTML=head+`<div class="cards">${cards}</div><div class="ft"><span>Motion Study · ${esc(L("kpt"))}: ${Object.keys(KPT).map(k=>esc(L(k))).join(", ")}</span><span>${esc(pageLbl(p+1,np))}</span></div>`;
+    host.appendChild(pg);pages.push(pg)}
+  await Promise.all([...host.querySelectorAll("img")].map(im=>im.complete?null:new Promise(r=>{im.onload=im.onerror=r})));
+  return{host,pages}}
+ACT.viPdf=async()=>{await jbsFlush();const b=$("#busy");b.textContent="Making PDF…";b.hidden=false;let host=null;
+  try{await Promise.all([loadLib("jspdf"),loadLib("html2canvas")]);const r=await buildViPages();host=r.host;await pagesToPdf(r.pages,"VI-"+safeName(S.cur.name)+".pdf")}
+  catch(e){b.hidden=true;toast("Couldn't make the PDF: "+(e.message||e))}finally{if(host)host.remove();b.hidden=true}};
 
 /* ===== Users and login ===== */
 // Accounts are kept on this phone (file motionstudy/users.json in the app, localStorage in a browser).
@@ -911,7 +1262,7 @@ async function hashPw(pw,saltHex){const salt=saltHex?new Uint8Array(saltHex.matc
   const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:120000,hash:"SHA-256"},key,256);return{salt:hex(salt),hash:hex(bits)}}
 async function checkPw(u,pw){const h=await hashPw(pw,u.salt);return h.hash===u.hash}
 const can=what=>{const r=S.user&&S.user.role;if(r==="admin")return true;if(r==="engineer")return what!=="users"&&what!=="delete";if(r==="checker")return what==="check";return false};
-const L={err:"",busy:false};
+const LG={err:"",busy:false};
 function vLogin(){const first=!Users.list.length;
   return`<section class="panel login"><div><div class="eyebrow">${first?"First start":"Sign in"}</div><h1>${first?"Create the admin account":"Motion Study"}</h1>
   <p class="lead">${first?"This account manages users on this phone. Choose a password you will remember; it cannot be recovered.":"Enter your user ID and password."}</p></div>
@@ -920,10 +1271,10 @@ function vLogin(){const first=!Users.list.length;
   <div class="field"><label class="lbl" for="lgPw">Password</label><input type="password" id="lgPw" autocomplete="${first?"new-password":"current-password"}" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>
   ${first?`<div class="field"><label class="lbl" for="lgPw2">Repeat password</label><input type="password" id="lgPw2" autocomplete="new-password" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>`
    :`<label class="check"><input type="checkbox" id="lgStay"> Stay signed in on this phone</label>`}
-  <p class="note" id="lgErr" style="color:var(--miss)">${esc(L.err)}</p>
+  <p class="note" id="lgErr" style="color:var(--miss)">${esc(LG.err)}</p>
   <button class="btn primary big" data-act="${first?"createAdmin":"login"}">${first?"Create account":"Sign in"}</button>
   ${NATIVE?`<button class="btn" data-act="exitAsk">Exit app</button>`:""}</section>`}
-function lgErr(m){L.err=m;const e=$("#lgErr");if(e)e.textContent=m}
+function lgErr(m){LG.err=m;const e=$("#lgErr");if(e)e.textContent=m}
 ACT.createAdmin=async()=>{const name=$("#lgName").value.trim(),uid=$("#lgId").value.trim().toLowerCase(),pw=$("#lgPw").value,pw2=$("#lgPw2").value;
   if(!name||!uid)return lgErr("Enter your name and a user ID.");if(!/^[a-z0-9._-]{3,30}$/.test(uid))return lgErr("User ID: 3–30 letters, numbers, dot, dash or underscore. No spaces.");
   if(pw.length<6)return lgErr("Password must be at least 6 characters.");if(pw!==pw2)return lgErr("The two passwords are different.");
@@ -933,22 +1284,22 @@ ACT.createAdmin=async()=>{const name=$("#lgName").value.trim(),uid=$("#lgId").va
 ACT.login=async()=>{const uid=$("#lgId").value,pw=$("#lgPw").value,stay=$("#lgStay").checked;const u=Users.find(uid);
   if(!u||!(await checkPw(u,pw)))return lgErr("User ID or password is wrong.");if(u.active===false)return lgErr("This account is switched off. Ask the admin.");
   signIn(u,stay)};
-function signIn(u,stay){S.user={id:u.id,name:u.name,role:u.role};L.err="";try{stay?localStorage.setItem("ms.session",u.id):localStorage.removeItem("ms.session")}catch(e){}renderUserbar();go("library")}
-ACT.logout=async()=>{closeMenu();if(S.view==="jbs")await jbsFlush();if(S.view==="record")stopRecordView();S.user=null;try{localStorage.removeItem("ms.session")}catch(e){}renderUserbar();S.view="login";render()};
-function renderUserbar(){const b=$("#userbar");if(!b)return;b.innerHTML=S.user?`<button class="uchip" data-act="openMenu" aria-haspopup="menu">${esc(S.user.name)} <i>${ROLES[S.user.role].l}</i> ☰</button>`:`<div class="privacy">Video stays on this phone. Only body-point coordinates are saved.</div>`}
+function signIn(u,stay){S.user={id:u.id,name:u.name,role:u.role};LG.err="";try{stay?localStorage.setItem("ms.session",u.id):localStorage.removeItem("ms.session")}catch(e){}renderUserbar();go("library")}
+ACT.logout=async()=>{closeMenu();if(S.view==="jbs"||S.view==="vi")await jbsFlush();if(S.view==="record")stopRecordView();S.user=null;try{localStorage.removeItem("ms.session")}catch(e){}renderUserbar();S.view="login";render()};
+function renderUserbar(){const b=$("#userbar");if(!b)return;b.innerHTML=S.user?`<button class="uchip" data-act="openMenu" aria-haspopup="menu"><span>${esc(S.user.name)}</span> <i>${ROLES[S.user.role].l}</i> ☰</button>`:""}
 ACT.openMenu=()=>{const m=$("#menu");m.innerHTML=`<div class="box" role="menu"><div class="who">Signed in as <b>${esc(S.user.name)}</b> (${ROLES[S.user.role].l})</div>
-  <button role="menuitem" data-act="menuGo" data-v="library">Standards</button>
-  ${can("users")?`<button role="menuitem" data-act="menuGo" data-v="users">Users</button>`:""}
-  <button role="menuitem" data-act="menuGo" data-v="password">Change password</button>
-  <button role="menuitem" data-act="logout">Log out</button>
-  ${NATIVE?`<button role="menuitem" data-act="exitAsk" style="color:var(--miss)">Exit app</button>`:""}</div>`;m.hidden=false};
+  <button role="menuitem" data-act="menuGo" data-v="library">${ic("list")}Standards</button>
+  ${can("users")?`<button role="menuitem" data-act="menuGo" data-v="users">${ic("users")}Users</button>`:""}
+  <button role="menuitem" data-act="menuGo" data-v="password">${ic("key")}Change password</button>
+  <button role="menuitem" data-act="logout">${ic("out")}Log out</button>
+  ${NATIVE?`<button role="menuitem" data-act="exitAsk" style="color:var(--miss)">${ic("power")}Exit app</button>`:""}</div>`;m.hidden=false};
 function closeMenu(){const m=$("#menu");if(m)m.hidden=true}
 document.addEventListener("click",e=>{const m=$("#menu");if(m&&!m.hidden&&e.target===m)closeMenu()});
 ACT.menuGo=d=>{closeMenu();go(d.v)};
 ACT.exitAsk=()=>{closeMenu();const m=$("#modal");m.innerHTML=`<div class="box" role="dialog" aria-labelledby="exT"><h2 id="exT">Exit Motion Study?</h2><p class="note">Your standards and checks are saved on this phone.</p>
   <div class="row"><button class="btn primary" data-act="exitApp" style="flex:1">Exit</button><button class="btn" data-act="exitCancel" style="flex:1">Cancel</button></div></div>`;m.hidden=false};
-ACT.exitCancel=()=>{$("#modal").hidden=true};
-ACT.exitApp=async()=>{$("#modal").hidden=true;try{if(S.view==="jbs")await jbsFlush();if(S.view==="record")stopRecordView()}catch(e){}
+ACT.exitCancel=()=>closeModal();
+ACT.exitApp=async()=>{closeModal();try{if(S.view==="jbs"||S.view==="vi")await jbsFlush();if(S.view==="record")stopRecordView()}catch(e){}
   try{if(!localStorage.getItem("ms.session")){S.user=null}}catch(e){}
   if(NP.App&&NP.App.exitApp)NP.App.exitApp();else toast("Close the app from the phone's recent apps screen.")};
 // Users screen (admin)
@@ -993,15 +1344,16 @@ ACT.cpSave=async()=>{const u=Users.list.find(x=>x.id===S.user.id);const o=$("#cp
 // Android back button
 function backTarget(){const v=S.view;
   if(v==="std"||v==="users"||v==="password")return"library";
-  if(v==="jbs"||v==="review"||v==="result")return"std";
+  if(v==="jbs"||v==="vi"||v==="video"||v==="review"||v==="result")return"std";
   if(v==="record")return R.mode==="attempt"?"std":"library";
   if(v==="edit")return E.base?"std":"library";
   return null}
-function onBack(){if(!$("#modal").hidden){$("#modal").hidden=true;return}if(!$("#menu").hidden){closeMenu();return}
+function onBack(){if(!$("#modal").hidden){closeModal();if(S.view==="vi"||S.view==="jbs"){const y=window.scrollY;render();window.scrollTo(0,y)}return}if(!$("#menu").hidden){closeMenu();return}
   if(!S.user||S.view==="library"||S.view==="login"){ACT.exitAsk();return}
   const t=backTarget();if(t)go(t);else ACT.exitAsk()}
 
 /* ===== Boot ===== */
+if(location.search.indexOf("mstest")>=0)window.__ms={S,E,R,go,render,Store,ACT,startVideoRec,stopVideoRec,openCam,get player(){return player}};
 (async()=>{
   app.innerHTML=`<section class="panel"><p class="note">Loading…</p></section>`;
   await Store.open();await Store.migrate();
