@@ -129,22 +129,22 @@ details.more[open]{display:flex;flex-direction:column;gap:8px}
 .msg .note{color:var(--dark-ink);font-size:14px}
 .vstage{position:relative;background:#000;width:100%}
 .vstage video{width:100%;max-height:56vh;display:block;object-fit:contain;background:#000}
-.vstage canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.player .vstage canvas{position:absolute;inset:0;width:100%;height:100%;max-height:none;margin:0;aspect-ratio:auto;pointer-events:none;background:transparent;border-radius:0}
 .pinv{position:sticky;top:calc(var(--abh) + env(safe-area-inset-top,0px));z-index:12}
 .pinv .vstage video{max-height:32vh}
 .pinv .pctl{padding-bottom:10px}
 body.typing .pinv .vstage video{max-height:22vh}
 body.typing .pinv .pctl{display:none}
-body.typing .pinv .player canvas{max-height:22vh}
+body.typing .pinv .player>canvas{max-height:22vh}
 .vcap{position:absolute;left:10px;bottom:10px;max-width:calc(100% - 20px);background:rgba(0,0,0,.66);color:#fff;border-radius:8px;padding:4px 10px;font-weight:600;font-size:14px;pointer-events:none}
 .vcap:empty{display:none}
 .vmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;background:rgba(10,16,15,.88);color:#fff;font-size:14px;font-weight:600}
 .bar{height:8px;border-radius:4px;background:var(--panel-2);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent)}
 .bar i.over{background:var(--slow)}
-.player canvas{width:100%;aspect-ratio:4/3;background:var(--dark);border-radius:12px;display:block}
-.pinv .player canvas{max-height:32vh;width:auto;margin:0 auto}
-.panel.flush .player canvas{border-radius:0}
+.player>canvas{width:100%;aspect-ratio:4/3;background:var(--dark);border-radius:12px;display:block}
+.pinv .player>canvas{max-height:32vh;width:auto;margin:0 auto}
+.panel.flush .player>canvas{border-radius:0}
 .pctl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .panel.flush .pctl{padding:10px 14px 0}
 .pctl input[type=range]{flex:1 1 120px;min-width:0;accent-color:var(--accent);min-height:36px}
@@ -780,17 +780,18 @@ class VPlayer{
     this.v.addEventListener("error",()=>{const er=this.v.error;const codes={1:"loading was stopped",2:"network/file read error",3:"the video data could not be decoded",4:"this video format is not supported on this phone"};
       const msg="Video can't play: "+(er?codes[er.code]||("error "+er.code):"unknown error")+(er&&er.message?" ("+er.message+")":"");this.showMsg(msg);toast(msg)});
     if(src)this.v.src=src;else this.showMsg("The video file could not be opened.");
-    this.v.addEventListener("loadedmetadata",()=>{fixDuration(this.v).then(()=>this.seek(this.t))},{once:true});
+    this.ready=new Promise(res=>{this.v.addEventListener("loadedmetadata",()=>{fixDuration(this.v).then(()=>{this.isReady=true;this.seek(this.t);res()})},{once:true});this.v.addEventListener("error",()=>res(),{once:true})});
     this.rng.max=this.dur;this.rng.addEventListener("input",()=>{this.pause();this.seek(+this.rng.value)});this.btn.addEventListener("click",()=>this.toggle());
     if(this.sp)this.sp.addEventListener("change",()=>{this.v.playbackRate=+this.sp.value})}
   showMsg(m){const st=this.root.querySelector(".vstage");if(!st)return;let d=st.querySelector(".vmsg");if(!d){d=document.createElement("div");d.className="vmsg";st.appendChild(d)}d.textContent=m}
   vt(t){return Math.max(0,(t-this.off)/1000)}
-  seek(t){this.t=clamp(t,0,this.dur);try{if(this.v.readyState>=1)this.v.currentTime=this.vt(this.t)}catch(e){}this.ui()}
+  seek(t){this.t=clamp(t,0,this.dur);try{if(this.isReady)this.v.currentTime=this.vt(this.t)}catch(e){}this.ui()}
   ui(){this.rng.value=this.t;this.tm.textContent=fmtClock(this.t)+" / "+fmtClock(this.dur);
     if(this.cv){const c=this.cv,x=c.getContext("2d");if(this.v.videoWidth&&(c.width!==this.v.videoWidth)){c.width=this.v.videoWidth;c.height=this.v.videoHeight}x.clearRect(0,0,c.width,c.height);if(this.overlay)this.overlay(c,this.t)}
     if(this.onTime)this.onTime(this.t)}
   toggle(){this.playing?this.pause():this.play()}
-  play(){if(this.t>=this.dur-40)this.seek(0);this.playing=true;this.btn.textContent="Pause";const p=this.v.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name!=="AbortError"){this.pause();this.showMsg("Video can't play: "+(e.message||e.name))}});let prev=this.t;
+  play(){if(!this.isReady){this.playing=true;this.btn.textContent="Pause";this.ready.then(()=>{if(this.playing&&this.isReady){this.playing=false;this.play()}});return}
+    if(this.t>=this.dur-40)this.seek(0);this.playing=true;this.btn.textContent="Pause";const p=this.v.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name!=="AbortError"){this.pause();this.showMsg("Video can't play: "+(e.message||e.name))}});let prev=this.t;
     const step=()=>{if(!this.playing)return;this.t=Math.min(this.dur,this.v.currentTime*1000+this.off);
       if(this.stopAt!=null&&this.t>=this.stopAt){const s=this.stopAt,f=this.onStop;this.stopAt=null;this.onStop=null;this.pause();this.seek(s);if(f)f();return}
       if(this.stops){const b=this.stops.find(x=>x>prev+5&&x<=this.t);if(b!=null){this.pause();this.seek(b);if(this.onAutoStop)this.onAutoStop(b);return}}
