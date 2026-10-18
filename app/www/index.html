@@ -138,6 +138,7 @@ body.typing .pinv .pctl{display:none}
 body.typing .pinv .player canvas{max-height:22vh}
 .vcap{position:absolute;left:10px;bottom:10px;max-width:calc(100% - 20px);background:rgba(0,0,0,.66);color:#fff;border-radius:8px;padding:4px 10px;font-weight:600;font-size:14px;pointer-events:none}
 .vcap:empty{display:none}
+.vmsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;background:rgba(10,16,15,.88);color:#fff;font-size:14px;font-weight:600}
 .bar{height:8px;border-radius:4px;background:var(--panel-2);overflow:hidden}
 .bar i{display:block;height:100%;background:var(--accent)}
 .bar i.over{background:var(--slow)}
@@ -680,22 +681,23 @@ async function startRec(){
   if(R.src==="file"){const v=$("#rv");v.currentTime=0;v.onended=()=>finishRec();try{await v.play()}catch(e){toast("Couldn't play the video.");R.recording=false}}
   else{R.t0=performance.now();startVideoRec()}
 }
-function startVideoRec(){R.vrec=null;R.chunks=[];R.vOffset=0;
-  if(R.mode!=="standard"||!R.stream||!window.MediaRecorder)return;
-  try{const types=["video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9","video/webm;codecs=vp8","video/webm"];const mt=types.find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch(e){return false}})||"";
+function startVideoRec(){R.vrec=null;R.chunks=[];R.vOffset=0;R.vErr="";
+  if(R.mode!=="standard"||!R.stream)return;if(!window.MediaRecorder){R.vErr="this phone has no video recorder in its browser engine";return}
+  try{const types=["video/webm;codecs=vp8","video/webm;codecs=vp9","video/webm","video/mp4;codecs=avc1","video/mp4"];const mt=types.find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch(e){return false}})||"";
     const r=new MediaRecorder(R.stream,mt?{mimeType:mt,videoBitsPerSecond:2500000}:{videoBitsPerSecond:2500000});R.vmime=r.mimeType||mt||"video/webm";
-    r.ondataavailable=e=>{if(e.data&&e.data.size)R.chunks.push(e.data)};r.onstart=()=>{R.vOffset=performance.now()-R.t0};r.start(1000);R.vrec=r}
-  catch(e){R.vrec=null}}
+    r.ondataavailable=e=>{if(e.data&&e.data.size)R.chunks.push(e.data)};r.onstart=()=>{R.vOffset=performance.now()-R.t0};r.onerror=ev=>{R.vErr="recorder error: "+((ev&&ev.error&&ev.error.name)||"unknown")};r.start(1000);R.vrec=r;R.vErr=""}
+  catch(e){R.vrec=null;R.vErr="recorder could not start ("+(e&&(e.name||e.message)||e)+")"}}
 async function stopVideoRec(keep){const r=R.vrec;R.vrec=null;if(!r)return null;
   if(r.state!=="inactive")await new Promise(res=>{r.onstop=()=>res();try{r.stop()}catch(e){res()}setTimeout(res,4000)});
   const blob=keep?new Blob(R.chunks,{type:(R.vmime||"video/webm").split(";")[0]}):null;R.chunks=[];
+  if(keep&&!(blob&&blob.size>2000)&&!R.vErr)R.vErr="the recording came out empty";
   return blob&&blob.size>2000?{blob,mime:blob.type,offsetMs:R.vOffset||0}:null}
 async function finishRec(){
   if(!R.recording)return;R.recording=false;beep(440,.3);const v=$("#rv");if(R.src==="file")try{v.pause()}catch(e){}
   const withPerson=R.frames.filter(f=>f.p).length;
   if(withPerson<10){await stopVideoRec(false);toast("No person was detected. Check the camera view and try again.");render();return}
   const rec={frames:R.frames.slice(),marks:R.marks.slice(),ar:R.ar};
-  if(R.mode==="standard"){if(R.src==="file"&&R.file)rec.video={blob:R.file,mime:R.file.type||"video/mp4",offsetMs:0};else{const b=$("#recBtn");if(b){b.disabled=true;b.textContent="Finishing video…"}rec.video=await stopVideoRec(true)}}
+  if(R.mode==="standard"){if(R.src==="file"&&R.file)rec.video={blob:R.file,mime:R.file.type||"video/mp4",offsetMs:0};else{const b=$("#recBtn");if(b){b.disabled=true;b.textContent="Finishing video…"}rec.video=await stopVideoRec(true);if(!rec.video)rec.videoErr=R.vErr||"unknown reason"}}
   if(R.mode==="standard"){E.init(rec,null);go("edit")}else{RV.init(rec,R.std);go("review")}
 }
 
@@ -747,7 +749,15 @@ ACT.docLang=d=>{DL=d.k;try{localStorage.setItem("ms.docLang",DL)}catch(e){}docum
 /* ===== Video helpers ===== */
 // Recorded WebM files have no duration until the end is read once; this forces it so seeking works.
 function fixDuration(v){if(isFinite(v.duration)&&v.duration>0)return Promise.resolve();return new Promise(res=>{let done=false;const fin=()=>{if(done)return;done=true;v.removeEventListener("timeupdate",h);try{v.currentTime=0}catch(e){}res()};const h=()=>{if(isFinite(v.duration))fin()};v.addEventListener("timeupdate",h);try{v.currentTime=1e101}catch(e){fin()}setTimeout(fin,2500)})}
-async function videoSrc(meta){if(!meta||!meta.file)return null;if(NATIVE&&FS&&FS.getUri){try{const r=await FS.getUri({path:meta.file,directory:"DATA"});return window.Capacitor.convertFileSrc(r.uri)}catch(e){return null}}return null}
+const VCACHE={};
+async function videoSrc(meta){if(!meta||!meta.file)return null;if(VCACHE[meta.file])return VCACHE[meta.file];if(!(NATIVE&&FS&&FS.getUri))return null;
+  const type=meta.mime&&meta.mime.split(";")[0]||(meta.ext==="mp4"?"video/mp4":"video/webm");let url=null;
+  try{const r=await FS.getUri({path:meta.file,directory:"DATA"});const direct=window.Capacitor.convertFileSrc(r.uri);
+    try{const res=await fetch(direct);if(!res.ok)throw new Error("HTTP "+res.status);const b=await res.blob();if(!b.size)throw new Error("empty");url=URL.createObjectURL(b.type?b:new Blob([b],{type}))}
+    catch(e){// fallback: read the file through the file plugin
+      const d=await FS.readFile({path:meta.file,directory:"DATA"});const bin=atob(d.data),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);url=URL.createObjectURL(new Blob([u],{type}))}}
+  catch(e){return null}
+  VCACHE[meta.file]=url;return url}
 async function writeBlob(blob,path,directory,onP){const CH=3*1024*1024;if(!blob||!blob.size)throw new Error("The video is empty");
   for(let off=0;off<blob.size;off+=CH){const b64=abToB64(await blob.slice(off,off+CH).arrayBuffer());
     if(off===0)await FS.writeFile({path,data:b64,directory,recursive:true});else await FS.appendFile({path,data:b64,directory});
@@ -766,17 +776,21 @@ async function deleteVideoFile(meta){if(!meta||!FS)return;try{await FS.deleteFil
 class VPlayer{
   constructor(root,dur,src,offsetMs,onTime,overlay){this.root=root;this.dur=Math.max(1,dur);this.off=offsetMs||0;this.onTime=onTime;this.overlay=overlay;this.t=0;this.playing=false;this.stopAt=null;this.onStop=null;this.stops=null;
     this.v=root.querySelector("video");this.cv=root.querySelector("canvas");this.rng=root.querySelector("input[type=range]");this.btn=root.querySelector("[data-pl=play]");this.tm=root.querySelector(".time");this.sp=root.querySelector("[data-pl=speed]");
-    this.v.muted=true;this.v.playsInline=true;this.v.preload="auto";if(src)this.v.src=src;
+    this.v.muted=true;this.v.playsInline=true;this.v.preload="auto";
+    this.v.addEventListener("error",()=>{const er=this.v.error;const codes={1:"loading was stopped",2:"network/file read error",3:"the video data could not be decoded",4:"this video format is not supported on this phone"};
+      const msg="Video can't play: "+(er?codes[er.code]||("error "+er.code):"unknown error")+(er&&er.message?" ("+er.message+")":"");this.showMsg(msg);toast(msg)});
+    if(src)this.v.src=src;else this.showMsg("The video file could not be opened.");
     this.v.addEventListener("loadedmetadata",()=>{fixDuration(this.v).then(()=>this.seek(this.t))},{once:true});
     this.rng.max=this.dur;this.rng.addEventListener("input",()=>{this.pause();this.seek(+this.rng.value)});this.btn.addEventListener("click",()=>this.toggle());
     if(this.sp)this.sp.addEventListener("change",()=>{this.v.playbackRate=+this.sp.value})}
+  showMsg(m){const st=this.root.querySelector(".vstage");if(!st)return;let d=st.querySelector(".vmsg");if(!d){d=document.createElement("div");d.className="vmsg";st.appendChild(d)}d.textContent=m}
   vt(t){return Math.max(0,(t-this.off)/1000)}
   seek(t){this.t=clamp(t,0,this.dur);try{if(this.v.readyState>=1)this.v.currentTime=this.vt(this.t)}catch(e){}this.ui()}
   ui(){this.rng.value=this.t;this.tm.textContent=fmtClock(this.t)+" / "+fmtClock(this.dur);
     if(this.cv){const c=this.cv,x=c.getContext("2d");if(this.v.videoWidth&&(c.width!==this.v.videoWidth)){c.width=this.v.videoWidth;c.height=this.v.videoHeight}x.clearRect(0,0,c.width,c.height);if(this.overlay)this.overlay(c,this.t)}
     if(this.onTime)this.onTime(this.t)}
   toggle(){this.playing?this.pause():this.play()}
-  play(){if(this.t>=this.dur-40)this.seek(0);this.playing=true;this.btn.textContent="Pause";const p=this.v.play();if(p&&p.catch)p.catch(()=>{});let prev=this.t;
+  play(){if(this.t>=this.dur-40)this.seek(0);this.playing=true;this.btn.textContent="Pause";const p=this.v.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name!=="AbortError"){this.pause();this.showMsg("Video can't play: "+(e.message||e.name))}});let prev=this.t;
     const step=()=>{if(!this.playing)return;this.t=Math.min(this.dur,this.v.currentTime*1000+this.off);
       if(this.stopAt!=null&&this.t>=this.stopAt){const s=this.stopAt,f=this.onStop;this.stopAt=null;this.onStop=null;this.pause();this.seek(s);if(f)f();return}
       if(this.stops){const b=this.stops.find(x=>x>prev+5&&x<=this.t);if(b!=null){this.pause();this.seek(b);if(this.onAutoStop)this.onAutoStop(b);return}}
@@ -887,6 +901,7 @@ function stepPanelHtml(){const i=Math.min(E.sel,E.els.length-1),el=E.els[i],n=E.
 function vEdit(){const f=E.fields,hasV=!!E.video;
   return`<div class="row"><button class="link" data-act="${E.base?"backStd":"home"}">← ${E.base?"Back without saving":"Discard recording"}</button></div>
   <div><div class="eyebrow">${E.base?"Edit standard":"New standard · name the steps"}</div><h1>Name the steps</h1>
+  ${!hasV&&E.rec.videoErr?`<p class="note" style="color:var(--miss)">No video was recorded: ${esc(E.rec.videoErr)}. You can still name the steps using the body lines. Please tell us this message.</p>`:""}
   <p class="lead">${hasV?"The app found the steps from the motion. Watch each one on the video, name it, and fix the cut if it is early or late.":"Play each step, check where it starts and ends, and give it a name."}</p></div>
   <section class="panel flush pinv">${hasV?vplayerHtml("ePlayer","eCap"):playerHtml("ePlayer")}</section>
   <section class="panel guide" id="stepPanel">${stepPanelHtml()}</section>
@@ -1066,7 +1081,7 @@ function vVideo(){const s=S.cur;let h=stdHead("video");
   h+=`<section class="panel flush">${vplayerHtml("bpPlayer","bpCap")}<div class="pad"><label class="check"><input type="checkbox" id="bpStep" data-change="bpStep"${BP.stepMode?" checked":""}> Stop at the end of each step</label></div></section>
   <section class="panel"><h2>Steps</h2><div class="chapters">${s.elements.map((e,i)=>`<button class="chap" data-act="bpGo" data-i="${i}" id="chap${i}"><span class="n">${i+1}</span><span>${esc(e.name)} ${kpBadges(e)}</span><span class="num">${((e.end-e.start)/1000).toFixed(1)} s</span></button>`).join("")}</div></section>
   <section class="panel"><div class="row">${s.video.gallery?`<button class="btn sm" data-act="bpShare">${ic("share")}Share video</button>`:""}${can("edit")&&!s.video.gallery&&NATIVE?`<button class="btn sm" data-act="bpGallery">Copy to Gallery</button>`:""}${can("delete")?`<button class="btn sm danger" data-act="bpDel">${ic("trash")}Delete video</button>`:""}</div>
-  <p class="note">${s.video.gallery?"Also in the phone's Gallery: "+esc(s.video.gallery.split("/").join(" › ")):"Not copied to the Gallery."} · ${(s.video.size/1048576).toFixed(1)} MB. Google Drive backups don't include videos; use Share video to put a copy on Drive.</p></section>`;
+  <p class="note">${s.video.gallery?"Also in the phone's Gallery: "+esc(s.video.gallery.split("/").join(" › ")):"Not copied to the Gallery."} · ${(s.video.size/1048576).toFixed(1)} MB · ${esc((s.video.mime||s.video.ext||"").split(";")[0])}. Google Drive backups don't include videos; use Share video to put a copy on Drive.</p></section>`;
   return h}
 async function mountVideo(){const s=S.cur;if(!s.video)return;const src=await videoSrc(s.video);if(S.view!=="video")return;if(!src){toast("Couldn't open the video file.");return}
   const onT=t=>{const tt=Math.max(0,t-1);const k=s.elements.findIndex(e=>tt>=e.start&&tt<e.end);const cap=$("#bpCap");if(cap)cap.textContent=k>=0?(k+1)+". "+s.elements[k].name:"";
