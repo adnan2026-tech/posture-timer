@@ -97,6 +97,34 @@ details.more[open]{display:flex;flex-direction:column;gap:8px}
 
 /* standard header + tabs */
 .sthead{display:flex;flex-direction:column;gap:2px}
+/* home */
+.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#0a3431 0%,#0d7a71 62%,#2b9c8e 100%);color:#fff;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:14px;box-shadow:var(--shadow)}
+.hero::after{content:"";position:absolute;right:-46px;top:-46px;width:190px;height:190px;border-radius:50%;border:30px solid rgba(255,255,255,.07);pointer-events:none}
+.hero .eyebrow{color:#bfe8e1}.hero h1{color:#fff;font-size:32px}.hero p{margin:4px 0 0;color:#d6efea}
+.hstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.hstats div{background:rgba(255,255,255,.13);border-radius:12px;padding:8px 10px;display:flex;flex-direction:column;min-width:0}
+.hstats b{font-family:var(--f-display);font-size:28px;line-height:1}.hstats span{font-size:12px;color:#d6efea}
+.quick{display:grid;grid-template-columns:1fr;gap:8px}
+.qa{display:flex;align-items:center;gap:14px;min-height:76px;padding:12px 16px;border-radius:14px;border:1.5px solid var(--line);background:var(--panel);text-align:left;cursor:pointer;box-shadow:var(--shadow);color:var(--ink)}
+.qa .ic{width:30px;height:30px}.qa.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.qa b{display:block;font-family:var(--f-display);font-size:21px;line-height:1.1;text-transform:uppercase;letter-spacing:.04em}.qa small{display:block;opacity:.82;font-size:13px}
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.tile{--tc:var(--accent);display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;min-height:122px;border-radius:14px;border:1px solid var(--line);background:var(--panel);text-align:left;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);min-width:0}
+.tile:active,.qa:active{transform:translateY(1px)}
+.tile .ti{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:color-mix(in srgb,var(--tc) 14%,#fff);color:var(--tc)}
+.tile b{font-size:15px;line-height:1.2}.tile .note{font-size:12px;margin:0}
+.t2{--tc:#c2410c}.t3{--tc:#2d6cd1}.t4{--tc:#a33aa0}.t5{--tc:#178a4a}.t6{--tc:#b9650a}.t7{--tc:#56655f}
+.sec-lbl{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:4px 2px -4px}
+@media(min-width:560px){.quick{grid-template-columns:1fr 1fr}}
+@media(min-width:720px){.tiles{grid-template-columns:repeat(4,minmax(0,1fr))}}
+.pick{display:flex;flex-direction:column;gap:6px;max-height:60vh;overflow:auto}
+/* approval codes */
+.code{font-family:var(--f-mono);font-size:28px;font-weight:600;letter-spacing:.12em;text-align:center;background:var(--panel-2);border:1.5px dashed var(--accent);border-radius:12px;padding:12px;user-select:all;color:var(--accent-dk)}
+.codein{font-family:var(--f-mono);font-size:22px;letter-spacing:.1em;text-transform:uppercase;text-align:center}
+.wait{display:flex;gap:10px;align-items:flex-start;background:#fff7e6;border:1px solid #f0d49b;border-radius:12px;padding:10px 12px}
+/* snap */
+.snap{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.snap img{width:104px;height:78px;object-fit:cover;border-radius:8px;border:1px solid var(--line);background:var(--dark)}
 .tabs{position:sticky;top:calc(var(--abh) + env(safe-area-inset-top,0px));z-index:15;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:4px;box-shadow:var(--shadow);scrollbar-width:none}
 .tabs::-webkit-scrollbar{display:none}
 .tabs button{min-height:54px;padding:6px 4px;border-radius:10px;border:0;background:none;font-weight:600;font-size:12px;line-height:1.15;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;text-align:center;min-width:0}
@@ -535,22 +563,23 @@ const Pose={lm:null,loading:null,lastTs:0,
 const encode=lm=>{const p=new Array(LM.length*3);LM.forEach((id,i)=>{const q=lm[id];p[i*3]=Math.round(q.x*1000);p[i*3+1]=Math.round(q.y*1000);p[i*3+2]=Math.round((q.visibility??1)*100)});return p};
 
 /* ===== App state ===== */
-const S={view:"library",stds:[],factory:new Map(),cur:null,attempts:[],sens:"normal"};
+const S={view:"home",stds:[],factory:new Map(),cur:null,attempts:[],sens:"normal"};
 try{S.sens=localStorage.getItem("ms.sens")||"normal"}catch(e){}
 const ACT={};
 let player=null;
 function stopPlayer(){if(player){player.stop();player=null}}
-function go(view){if(!S.user&&view!=="login")view="login";stopPlayer();closeModal();if(S.view==="jbs"||S.view==="vi")jbsFlush();if(S.view==="record"&&view!=="record")stopRecordView();S.view=view;render();window.scrollTo(0,0)}
+function go(view){if(!S.user&&view!=="login"&&view!=="request")view="login";stopPlayer();closeModal();if(S.view==="jbs"||S.view==="vi")jbsFlush();if(S.view==="record"&&view!=="record")stopRecordView();S.view=view;render();window.scrollTo(0,0)}
 function render(){
-  if(!S.user)S.view="login";
-  const v={library:vLibrary,std:vStd,record:vRecord,edit:vEdit,review:vReview,result:vResult,jbs:vJbs,vi:vVi,video:vVideo,login:vLogin,users:vUsers,password:vPassword}[S.view];
+  if(!S.user&&S.view!=="request")S.view="login";
+  const v={home:vHome,settings:vSettings,request:vRequest,library:vLibrary,std:vStd,record:vRecord,edit:vEdit,review:vReview,result:vResult,jbs:vJbs,vi:vVi,video:vVideo,login:vLogin,users:vUsers,password:vPassword}[S.view];
   app.innerHTML=v();
   const m={record:mountRecord,edit:mountEdit,review:mountReview,result:mountResult,jbs:mountJbs,vi:mountJbs,video:mountVideo}[S.view];if(m)m();
 }
 document.addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;const f=ACT[b.dataset.act];if(f){e.preventDefault();f(b.dataset,b)}});
 document.addEventListener("change",e=>{const t=e.target;const f=t.dataset&&ACT[t.dataset.change];if(f)f(t.dataset,t)});
 document.addEventListener("input",e=>{const t=e.target;const f=t.dataset&&ACT[t.dataset.input];if(f)f(t.dataset,t)});
-ACT.home=()=>{if(S.user)go("library")};
+ACT.home=()=>{if(S.user)go("home")};
+ACT.lib=()=>{if(S.user)go("library")};
 
 /* ===== Library ===== */
 async function loadStds(){
@@ -559,29 +588,59 @@ async function loadStds(){
   for(const s of local){const f=map.get(s.id);if(!f||(s.updated||0)>=(f.updated||0))map.set(s.id,{...s,factory:!!f&&(f.updated||0)===(s.updated||0)})}
   S.stds=[...map.values()].sort((a,b)=>(b.updated||0)-(a.updated||0));
 }
+function stdItem(s){return`<button class="item" data-act="openStd" data-id="${esc(s.id)}"><div class="item-main"><h3>${esc(s.name)}</h3><div class="meta">${esc(s.area||"")}${s.area?" · ":""}${s.elements.length} steps · expert ${fmtS(s.duration/1000)}${s.expert?" · "+esc(s.expert):""}</div></div><span class="row">${s.video?'<span class="chip vid">Video</span>':""}${s.factory?'<span class="chip factory">Factory library</span>':""}</span></button>`}
+const HOW=`<section class="steps"><div class="step"><b>1</b><h3>Record the expert</h3><p class="note">Phone on a stand, same view every time. One clean cycle of the task.</p></div>
+  <div class="step"><b>2</b><h3>Name the steps</h3><p class="note">The video stops at each step. Name it, snap a picture for the visual instruction, mark key points.</p></div>
+  <div class="step"><b>3</b><h3>Check employees</h3><p class="note">Same camera position. Get time per step, missed steps, extra motions and a side-by-side replay.</p></div></section>`;
+function lastBackup(){let b="";try{b=localStorage.getItem("ms.lastBackup")||""}catch(e){}return b?+b:0}
+function vHome(){const n=S.stds.length,nv=S.stds.filter(s=>s.video).length,np=S.stds.reduce((a,s)=>a+s.elements.filter(e=>e.photo).length,0);
+  const hr=new Date().getHours(),greet=hr<12?"Good morning":hr<17?"Good afternoon":"Good evening",first=String(S.user.name||"").trim().split(/\s+/)[0];
+  const lb=lastBackup(),stale=n&&(!lb||Date.now()-lb>7*864e5);
+  const T=(act,icon,title,sub,cls,extra)=>`<button class="tile ${cls||""}" data-act="${act}"${extra||""}><span class="ti">${ic(icon)}</span><b>${title}</b><span class="note">${sub}</span></button>`;
+  let h=`<section class="hero"><div><div class="eyebrow">${new Date().toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}</div><h1>${greet}, ${esc(first)}</h1><p>What would you like to do today?</p></div>
+  <div class="hstats"><div><b class="num">${n}</b><span>standards</span></div><div><b class="num">${nv}</b><span>videos</span></div><div><b class="num">${np}</b><span>step pictures</span></div></div></section>
+  <section class="quick">${can("edit")?`<button class="qa primary" data-act="newStd">${ic("rec")}<span><b>Record new standard</b><small>Film the expert doing the task once</small></span></button>`:""}
+  <button class="qa" data-act="pick" data-to="check">${ic("check")}<span><b>Check an employee</b><small>Compare a person with a standard</small></span></button></section>
+  <div class="sec-lbl">Library &amp; documents</div>
+  <section class="tiles">${T("lib","list","Standards",n+" on this phone")}${T("pick","play","Best-practice videos",nv+" saved","t2",' data-to="video"')}
+  ${T("pick","doc","Job breakdown sheets","Edit · PDF · Excel","t3",' data-to="jbs"')}${T("pick","image","Visual instructions","Pictures · mark-up · PDF","t4",' data-to="vi"')}
+  ${can("edit")?T("backup","cloud","Back up to Drive",stale?'<span style="color:var(--slow)">'+(lb?"Last "+fmtDate(lb):"Not backed up yet")+"</span>":lb?"Last "+fmtDate(lb):"Keep standards safe","t5"):""}
+  ${can("users")?T("menuGo","users","Users &amp; approvals","Approve new users","t6",' data-v="users"'):""}
+  ${T("menuGo","gear","Settings","Strictness · language · restore","t7",' data-v="settings"')}</section>`;
+  if(n)h+=`<section class="panel"><div class="row between"><h2>Recently updated</h2><button class="link" data-act="lib">See all</button></div><div class="list">${S.stds.slice(0,3).map(stdItem).join("")}</div></section>`;
+  else h+=`<div class="sec-lbl">How it works</div>`+HOW;
+  return h}
 function vLibrary(){
-  let h=`<div><h1>Motion standards</h1><p class="lead">Record an expert doing a task once. Then record any employee doing the same task. The app lines the two motions up and shows each step that was missed, slow, or done differently.</p></div>
-  <section class="steps"><div class="step"><b>1</b><h3>Record the expert</h3><p class="note">Phone on a stand, same view every time. One clean cycle of the task.</p></div>
-  <div class="step"><b>2</b><h3>Name the steps</h3><p class="note">The app splits the cycle into elements. Rename, split or merge them, mark key points.</p></div>
-  <div class="step"><b>3</b><h3>Check employees</h3><p class="note">Same camera position. Get time per step, missed steps, extra motions and a side-by-side replay.</p></div></section>
+  let h=`<div class="row"><button class="link" data-act="home">← Home</button></div><div><h1>Motion standards</h1><p class="lead">Record an expert doing a task once. Then record any employee doing the same task. The app lines the two motions up and shows each step that was missed, slow, or done differently.</p></div>
   ${can("edit")?`<div class="row"><button class="btn primary big" data-act="newStd">Record new standard</button></div>`:""}`;
   h+=`<section class="panel"><div class="row between"><h2>Standards on this phone</h2><span class="note">${S.stds.length}</span></div>`;
-  if(!S.stds.length)h+=`<p class="note">No standards yet. Record an expert, or import a standard file someone shared with you.</p>`;
-  else h+=`<div class="list">`+S.stds.map(s=>`<button class="item" data-act="openStd" data-id="${esc(s.id)}"><div class="item-main"><h3>${esc(s.name)}</h3><div class="meta">${esc(s.area||"")}${s.area?" · ":""}${s.elements.length} steps · expert ${fmtS(s.duration/1000)}${s.expert?" · "+esc(s.expert):""}</div></div><span class="row">${s.video?'<span class="chip vid">Video</span>':""}${s.factory?'<span class="chip factory">Factory library</span>':""}</span></button>`).join("")+`</div>`;
-  let lastB="";try{lastB=localStorage.getItem("ms.lastBackup")||""}catch(e){}
-  const old=S.stds.length&&(!lastB||Date.now()-(+lastB)>7*864e5);
-  h+=`</section><section class="panel"><h2>Google Drive backup</h2>
-  <p class="note">Standards, job breakdown sheets, step pictures and checks are saved on this phone (videos are not in the backup; share them from the Video tab). Back them up to Google Drive to keep them safe or move them to another phone: tap <b>Back up</b>, choose <b>Drive</b> in the share menu, and pick a folder.</p>
-  ${old?`<p class="note" style="color:var(--slow)">${lastB?"Last backup "+fmtDate(+lastB)+".":"Not backed up yet."} Back up after recording new standards.</p>`:lastB?`<p class="note">Last backup ${fmtDate(+lastB)}.</p>`:""}
-  <div class="row">${can("edit")?`<button class="btn sm primary" data-act="backup"${S.stds.length?"":" disabled"}>Back up to Google Drive</button>`:""}${can("users")?`<label class="btn sm" for="importFile">Restore from Drive / import file</label><input type="file" id="importFile" accept="*/*" data-change="importFile" hidden>`:""}</div>
-  <p class="note">To restore, tap Restore, open the menu (☰) in the file picker, choose <b>Drive</b>, and pick the backup file.</p></section>
-  <section class="panel"><h2>Comparison strictness</h2><div class="seg">${["strict","normal","lenient"].map(k=>`<button class="${S.sens===k?"on":""}" data-act="sens" data-k="${k}">${k[0].toUpperCase()+k.slice(1)}</button>`).join("")}</div><p class="note">How different a motion must be before it counts as a different method. Use Strict for precise hand work, Lenient when the camera view varies a lot.</p></section>`;
-  return h;
+  if(!S.stds.length)h+=`<p class="note">No standards yet. Record an expert, or import a standard file someone shared with you (Settings › Restore).</p>`;
+  else h+=`<div class="list">`+S.stds.map(stdItem).join("")+`</div>`;
+  return h+`</section>`+HOW;
 }
-ACT.sens=d=>{S.sens=d.k;try{localStorage.setItem("ms.sens",d.k)}catch(e){}render()};
+function vSettings(){const lb=lastBackup();
+  return`<div class="row"><button class="link" data-act="home">← Home</button></div><div><h1>Settings &amp; backup</h1></div>
+  <section class="panel"><h2>Google Drive backup</h2>
+  <p class="note">Standards, job breakdown sheets, step pictures and checks are saved on this phone (videos are not in the backup; share them from the Video tab). Back them up to Google Drive to keep them safe or move them to another phone: tap <b>Back up</b>, choose <b>Drive</b> in the share menu, and pick a folder.</p>
+  <p class="note">${lb?"Last backup "+fmtDate(lb)+".":"Not backed up yet."}</p>
+  <div class="row">${can("edit")?`<button class="btn sm primary" data-act="backup"${S.stds.length?"":" disabled"}>${ic("cloud")}Back up to Google Drive</button>`:""}${can("users")?`<label class="btn sm" for="importFile">Restore from Drive / import file</label><input type="file" id="importFile" accept="*/*" data-change="importFile" hidden>`:""}</div>
+  <p class="note">To restore, tap Restore, open the menu (☰) in the file picker, choose <b>Drive</b>, and pick the backup file.</p></section>
+  <section class="panel"><h2>Comparison strictness</h2><div class="seg">${["strict","normal","lenient"].map(k=>`<button class="${S.sens===k?"on":""}" data-act="sens" data-k="${k}">${k[0].toUpperCase()+k.slice(1)}</button>`).join("")}</div><p class="note">How different a motion must be before it counts as a different method. Use Strict for precise hand work, Lenient when the camera view varies a lot.</p></section>
+  <section class="panel"><h2>Language of printed documents</h2>${docLangSeg()}<p class="note">Used for job breakdown sheets and visual instructions (PDF and Excel).</p></section>`}
+ACT.pick=d=>{const to=d.to;const list=to==="video"?S.stds.filter(s=>s.video):S.stds;
+  if(!list.length)return toast(to==="video"?"No best-practice videos yet. Save the video when you record a new standard.":"No standards yet. Record a new standard first.");
+  if(list.length===1)return openStdTo(list[0].id,to);
+  const title={check:"Check an employee",video:"Best-practice videos",jbs:"Job breakdown sheets",vi:"Visual instructions"}[to];
+  const m=$("#modal");m.innerHTML=`<div class="box" role="dialog" aria-labelledby="pkT"><h2 id="pkT">${title}</h2><p class="note">Choose the standard (task).</p>
+  <div class="pick list">${list.map(s=>`<button class="item" data-act="pickGo" data-id="${esc(s.id)}" data-to="${to}"><div class="item-main"><h3>${esc(s.name)}</h3><div class="meta">${esc(s.area||"")}${s.area?" · ":""}${s.elements.length} steps${to==="vi"?" · "+s.elements.filter(e=>e.photo).length+" pictures":""}</div></div>${s.video?'<span class="chip vid">Video</span>':""}</button>`).join("")}</div>
+  <button class="btn" data-act="closeModal">Cancel</button></div>`;m.hidden=false};
+ACT.pickGo=d=>{closeModal();openStdTo(d.id,d.to)};
+async function openStdTo(id,to){const s=S.stds.find(x=>x.id===id);if(!s)return;S.cur=s;S.attempts=(await Store.byStd(s.id)).sort((a,b)=>b.created-a.created);
+  if(to==="check"){R.mode="attempt";R.std=s;go("record")}else{if(to==="jbs"||to==="vi")JB.state="";go(to)}}
+ACT.sens=d=>{S.sens=d.k;try{localStorage.setItem("ms.sens",d.k)}catch(e){}document.querySelectorAll("[data-act=sens]").forEach(b=>b.classList.toggle("on",b.dataset.k===d.k))};
 ACT.newStd=()=>{R.mode="standard";R.std=null;go("record")};
 ACT.openStd=async d=>{const s=S.stds.find(x=>x.id===d.id);if(!s)return;S.cur=s;S.attempts=(await Store.byStd(s.id)).sort((a,b)=>b.created-a.created);go("std")};
-ACT.backup=async()=>{$("#busy").textContent="Preparing backup…";$("#busy").hidden=false;
+ACT.backup=async()=>{if(!S.stds.length)return toast("Nothing to back up yet.");$("#busy").textContent="Preparing backup…";$("#busy").hidden=false;
   try{const stds=(await Store.all("standards"));const atts=FS?await FileStore.all("attempts"):await Store.all("attempts");
     const name="MotionStudy-backup-"+new Date().toISOString().slice(0,10)+".json";$("#busy").hidden=true;
     await download(name,JSON.stringify({type:"motion-backup",version:1,created:Date.now(),standards:stds,attempts:atts,users:Users.list}),"application/json");
@@ -792,7 +851,7 @@ class VPlayer{
   toggle(){this.playing?this.pause():this.play()}
   play(){if(!this.isReady){this.playing=true;this.btn.textContent="Pause";this.ready.then(()=>{if(this.playing&&this.isReady){this.playing=false;this.play()}});return}
     if(this.t>=this.dur-40)this.seek(0);this.playing=true;this.btn.textContent="Pause";const p=this.v.play();if(p&&p.catch)p.catch(e=>{if(e&&e.name!=="AbortError"){this.pause();this.showMsg("Video can't play: "+(e.message||e.name))}});let prev=this.t;
-    const step=()=>{if(!this.playing)return;this.t=Math.min(this.dur,this.v.currentTime*1000+this.off);
+    const step=()=>{if(!this.playing)return;if(this.v.seeking){this.raf=requestAnimationFrame(step);return}this.t=Math.min(this.dur,this.v.currentTime*1000+this.off);if(this.t<prev-5)prev=this.t;
       if(this.stopAt!=null&&this.t>=this.stopAt){const s=this.stopAt,f=this.onStop;this.stopAt=null;this.onStop=null;this.pause();this.seek(s);if(f)f();return}
       if(this.stops){const b=this.stops.find(x=>x>prev+5&&x<=this.t);if(b!=null){this.pause();this.seek(b);if(this.onAutoStop)this.onAutoStop(b);return}}
       if(this.t>=this.dur||this.v.ended){this.pause();this.t=this.dur}prev=this.t;this.ui();if(this.playing)this.raf=requestAnimationFrame(step)};
@@ -836,14 +895,18 @@ ACT.grab=async d=>{const s=S.cur,i=+d.i,e=s.elements[i];G.i=i;const src=await vi
   m.hidden=false;const v=$("#gV"),off=-(s.video.start||0)*1000;const seek=()=>{const r=$("#gR");if(!r)return;const t=+r.value;try{v.currentTime=Math.max(0,(t-off)/1000)}catch(e){}$("#gTm").textContent=fmtClock(t-e.start)+" into the step"};
   v.addEventListener("loadedmetadata",()=>fixDuration(v).then(seek),{once:true});v.src=src;$("#gR").addEventListener("input",seek)};
 ACT.gStep=d=>{const r=$("#gR");if(!r)return;r.value=clamp(+r.value+(+d.d),+r.min,+r.max);r.dispatchEvent(new Event("input"))};
-ACT.gTake=()=>{const v=$("#gV");if(!v||!v.videoWidth)return toast("The video isn't ready yet. Wait a moment and try again.");
+function snapVideo(v){if(!v||!v.videoWidth){toast("The video isn't ready yet. Wait a moment and try again.");return null}
   const k=Math.min(1,1280/v.videoWidth),c=document.createElement("canvas");c.width=Math.round(v.videoWidth*k);c.height=Math.round(v.videoHeight*k);c.getContext("2d").drawImage(v,0,0,c.width,c.height);
-  const e=S.cur.elements[G.i];e.photo=c.toDataURL("image/jpeg",0.84);e.marks=[];jbsMark();closeModal();openMarkup(G.i)};
+  try{return c.toDataURL("image/jpeg",0.84)}catch(e){toast("Couldn't take the picture: "+(e.message||e));return null}}
+function snapFlash(root){const st=root&&root.querySelector(".vstage");if(!st)return;const f=document.createElement("div");f.style.cssText="position:absolute;inset:0;background:#fff;opacity:.85;transition:opacity .35s;pointer-events:none;z-index:3";st.appendChild(f);requestAnimationFrame(()=>requestAnimationFrame(()=>{f.style.opacity="0"}));setTimeout(()=>f.remove(),450)}
+ACT.gTake=()=>{const ph=snapVideo($("#gV"));if(!ph)return;
+  const e=S.cur.elements[G.i];e.photo=ph;e.marks=[];jbsMark();closeModal();openMarkup(G.i)};
 ACT.closeModal=()=>{closeModal();if(S.view==="vi"||S.view==="jbs"){const y=window.scrollY;render();window.scrollTo(0,y)}};
 
 const MK={i:-1,tool:"arrow",color:"#e53935",marks:[],img:null,drag:null};
 const MKCOL=["#e53935","#ffc107","#2e9d4f","#ffffff"];
-function openMarkup(i){const e=S.cur.elements[i];if(!e.photo)return;MK.i=i;MK.marks=(e.marks||[]).map(x=>({...x}));const m=$("#modal");
+function mkList(){return S.view==="edit"?E.els:S.cur.elements}
+function openMarkup(i){const e=mkList()[i];if(!e||!e.photo)return;MK.i=i;MK.marks=(e.marks||[]).map(x=>({...x}));const m=$("#modal");
   m.innerHTML=`<div class="markup" role="dialog" aria-label="Mark up the step picture"><div class="mk-top"><b>${esc(L("step").split(" / ")[0])} ${i+1}: ${esc(e.name)}</b><span class="note">Drag on the picture to draw.</span></div>
     <div class="mk-stage"><canvas id="mkC"></canvas></div>
     <div class="mk-tools"><div class="seg">${[["arrow","Arrow"],["circle","Circle"],["box","Box"]].map(([k,l])=>`<button class="${MK.tool===k?"on":""}" data-act="mkTool" data-k="${k}">${l}</button>`).join("")}</div>
@@ -860,7 +923,8 @@ function bindMk(c){const pt=ev=>{const r=c.getBoundingClientRect();return{x:clam
 ACT.mkTool=d=>{MK.tool=d.k;document.querySelectorAll("[data-act=mkTool]").forEach(b=>b.classList.toggle("on",b.dataset.k===d.k))};
 ACT.mkCol=d=>{MK.color=d.c;document.querySelectorAll("[data-act=mkCol]").forEach(b=>b.classList.toggle("on",b.dataset.c===d.c))};
 ACT.mkUndo=()=>{MK.marks.pop();mkDraw()};ACT.mkClear=()=>{MK.marks=[];mkDraw()};
-ACT.mkDone=()=>{const e=S.cur.elements[MK.i];e.marks=MK.marks;jbsMark();closeModal();const y=window.scrollY;render();window.scrollTo(0,y)};
+ACT.mkDone=()=>{const e=mkList()[MK.i];e.marks=MK.marks;closeModal();
+  if(S.view==="edit"){refreshStep();return}jbsMark();if(S.view==="vi"||S.view==="jbs"){const y=window.scrollY;render();window.scrollTo(0,y)}else toast("Picture saved to step "+(MK.i+1)+" of the visual instruction")};
 ACT.markup=d=>openMarkup(+d.i);
 
 /* Timeline (elements over the recording) */
@@ -892,9 +956,11 @@ function stepPanelHtml(){const i=Math.min(E.sel,E.els.length-1),el=E.els[i],n=E.
   return`<div class="row between"><h2><span class="sn">${i+1}</span> Step ${i+1} <span class="of">of ${n}</span></h2><span class="num note">${((el.end-el.start)/1000).toFixed(1)} s</span></div>
   <p class="note" id="gHint">${hint}</p>
   <div class="field"><label class="lbl" for="elName">Step name</label><input type="text" id="elName" value="${esc(el.name)}" data-input="elName" placeholder="e.g. Pick up bobbin" enterkeyhint="${last?"done":"next"}"></div>
-  <div class="row"><button class="btn primary" data-act="playStep" style="flex:1">${ic("play")}${E.g==="paused"?"Replay step":"Play step"}</button>
-    ${last?`<button class="btn primary" data-act="gDone" style="flex:1">${ic("check")}All steps named</button>`:`<button class="btn primary" data-act="nextPlay" style="flex:1">Next step ${ic("next")}</button>`}</div>
-  ${last?"":`<div class="field"><span class="lbl">Is the cut at the end of this step early or late?</span><div class="row"><button class="btn sm" data-act="nudge" data-d="-200">◀ Cut 0.2 s earlier</button><button class="btn sm" data-act="nudge" data-d="200">Cut 0.2 s later ▶</button></div></div>`}
+  <div class="row"><button class="btn primary" data-act="playStep" data-keep style="flex:1">${ic("play")}${E.g==="paused"?"Replay step":"Play step"}</button>
+    ${last?`<button class="btn primary" data-act="gDone" style="flex:1">${ic("check")}All steps named</button>`:`<button class="btn primary" data-act="nextPlay" data-keep style="flex:1">Next step ${ic("next")}</button>`}</div>
+  ${last?"":`<div class="field"><span class="lbl">Is the cut at the end of this step early or late?</span><div class="row"><button class="btn sm" data-act="nudge" data-d="-200" data-keep>◀ Cut 0.2 s earlier</button><button class="btn sm" data-act="nudge" data-d="200" data-keep>Cut 0.2 s later ▶</button></div></div>`}
+  ${E.video?`<div class="snap">${el.photo?`<img src="${el.photo}" alt="Picture for step ${i+1}">`:""}<div class="row"><button class="btn sm" data-act="eSnap" data-keep>${ic("camera")}${el.photo?"Snap again":"Snap step picture"}</button>${el.photo?`<button class="btn sm" data-act="eMark">${ic("pen")}Mark up${(el.marks||[]).length?" ("+el.marks.length+")":""}</button><button class="btn sm danger" data-act="eSnapDel">Remove</button>`:""}</div></div>
+  <p class="note" style="margin-top:-4px">${el.photo?"This picture goes on the visual instruction.":"Optional: pause on the best moment and snap it for the visual instruction."}</p>`:""}
   <label class="check"><input type="checkbox" id="elKey" data-change="elKey"${el.key?" checked":""}> Key point (flagged red if an employee misses it)</label>
   <details class="more"><summary>More: split, merge, move between steps</summary>
     <div class="row"><button class="btn sm" data-act="split">Split at play position</button><button class="btn sm" data-act="mergeNext"${last?" disabled":""}>Merge with next</button><button class="btn sm" data-act="mergePrev"${i===0?" disabled":""}>Merge with previous</button></div>
@@ -933,6 +999,11 @@ ACT.ovl=(d,el)=>{E.ovl=el.checked;if(player)player.seek(E.t)};
 ACT.fld=(d,el)=>{E.fields[d.f]=el.type==="number"?+el.value:el.value};
 ACT.elName=(d,el)=>{E.els[E.sel].name=el.value;const c=$("#eCur");if(c)c.textContent=(E.sel+1)+". "+el.value;const cap=$("#eCap");if(cap)cap.textContent=(E.sel+1)+". "+el.value};
 ACT.elKey=(d,el)=>{E.els[E.sel].key=el.checked};
+ACT.eSnap=()=>{if(player)player.pause();const root=$("#ePlayer");const ph=snapVideo(root&&root.querySelector("video"));if(!ph)return;snapFlash(root);
+  const t=E.t,k=E.els.findIndex(e=>Math.max(E.trim[0],t-1)>=e.start&&Math.max(E.trim[0],t-1)<e.end);const i=k>=0?k:E.sel;
+  E.els[i].photo=ph;E.els[i].marks=[];if(i!==E.sel)E.sel=i;E.g=E.g==="playing"?"paused":E.g;refreshStep();toast("Picture taken for step "+(i+1))};
+ACT.eMark=()=>openMarkup(E.sel);
+ACT.eSnapDel=()=>{const e=E.els[E.sel];delete e.photo;e.marks=[];refreshStep()};
 ACT.playStep=()=>{if(!player)return;const el=E.els[E.sel];const pv=document.querySelector(".pinv"),sp=$("#stepPanel");if(pv&&sp){const gap=sp.getBoundingClientRect().top-pv.getBoundingClientRect().bottom;if(gap>40||sp.getBoundingClientRect().top<pv.getBoundingClientRect().bottom)window.scrollBy({top:gap-10,behavior:"smooth"})}E.g="playing";const h=$("#gHint");if(h)h.textContent="Playing this step…";player.pause();player.seek(el.start);
   const fin=()=>{E.g="paused";refreshStep();const n=$("#elName");if(n){n.focus({preventScroll:true});if(/^Step \d+$/.test(n.value))n.select()}};
   if(player.playTo)player.playTo(el.end,fin);else player.play()};
@@ -940,6 +1011,7 @@ ACT.nextPlay=()=>{if(E.sel<E.els.length-1){E.sel++;refreshStep();ACT.playStep()}
 ACT.gDone=()=>{if(player)player.pause();E.g="";refreshStep();const f=$("#fName");if(f){f.scrollIntoView({behavior:"smooth",block:"center"});setTimeout(()=>f.focus(),450)}toast("All steps named. Add the task details and save.")};
 ACT.nudge=d=>{const i=E.sel;if(i>=E.els.length-1)return;const a=E.els[i],b=E.els[i+1];const ne=clamp(a.end+(+d.d),a.start+300,b.end-300);a.end=ne;b.start=ne;
   if(player){player.pause();player.seek(ne-40)}E.g="paused";refreshStep()};
+document.addEventListener("pointerdown",e=>{if(e.target.closest&&e.target.closest("[data-keep]"))e.preventDefault()});
 document.addEventListener("focusin",e=>{if(e.target&&e.target.id==="elName")document.body.classList.add("typing")});
 document.addEventListener("focusout",e=>{if(e.target&&e.target.id==="elName")document.body.classList.remove("typing")});
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target&&e.target.id==="elName"&&S.view==="edit"){e.preventDefault();if(E.sel<E.els.length-1)ACT.nextPlay();else ACT.gDone()}});
@@ -1058,7 +1130,7 @@ ACT.delAtt=async()=>{if(!confirm("Delete this employee check?"))return;await Sto
 
 /* ===== Standard: header + tabs ===== */
 function stdHead(active){const s=S.cur;const T=[["std","Overview","grid"],["video","Video","play"],["jbs","Job breakdown","doc"],["vi","Visual instruction","image"]];
-  return`<div class="row"><button class="link" data-act="home">← All standards</button></div>
+  return`<div class="row"><button class="link" data-act="lib">← All standards</button></div>
   <div class="sthead"><div class="eyebrow">${esc(s.area||"Standard")}</div><h1>${esc(s.name)}</h1></div>
   <nav class="tabs" aria-label="Standard sections">${T.map(([v,l,i])=>`<button class="${active===v?"on":""}" data-act="tab" data-v="${v}"${active===v?' aria-current="page"':""}>${ic(i)}<span>${l}</span></button>`).join("")}</nav>`}
 ACT.tab=d=>{if(S.view===d.v)return;if(d.v==="jbs"||d.v==="vi")JB.state="";go(d.v)};
@@ -1079,7 +1151,7 @@ function vStd(){const s=S.cur;const smv=smvOf(s);
 const BP={stepMode:true};
 function vVideo(){const s=S.cur;let h=stdHead("video");
   if(!s.video)return h+`<section class="panel empty">${ic("play","lg")}<h2>No best-practice video</h2><p class="note">A video is kept when you record a new standard with the live camera (or from a video file) and choose <b>Save video</b> after naming the steps.</p></section>`;
-  h+=`<section class="panel flush">${vplayerHtml("bpPlayer","bpCap")}<div class="pad"><label class="check"><input type="checkbox" id="bpStep" data-change="bpStep"${BP.stepMode?" checked":""}> Stop at the end of each step</label></div></section>
+  h+=`<section class="panel flush">${vplayerHtml("bpPlayer","bpCap")}<div class="pad row between"><label class="check"><input type="checkbox" id="bpStep" data-change="bpStep"${BP.stepMode?" checked":""}> Stop at the end of each step</label>${can("edit")?`<button class="btn sm primary" data-act="bpSnap">${ic("camera")}Snap step picture</button>`:""}</div></section>
   <section class="panel"><h2>Steps</h2><div class="chapters">${s.elements.map((e,i)=>`<button class="chap" data-act="bpGo" data-i="${i}" id="chap${i}"><span class="n">${i+1}</span><span>${esc(e.name)} ${kpBadges(e)}</span><span class="num">${((e.end-e.start)/1000).toFixed(1)} s</span></button>`).join("")}</div></section>
   <section class="panel"><div class="row">${s.video.gallery?`<button class="btn sm" data-act="bpShare">${ic("share")}Share video</button>`:""}${can("edit")&&!s.video.gallery&&NATIVE?`<button class="btn sm" data-act="bpGallery">Copy to Gallery</button>`:""}${can("delete")?`<button class="btn sm danger" data-act="bpDel">${ic("trash")}Delete video</button>`:""}</div>
   <p class="note">${s.video.gallery?"Also in the phone's Gallery: "+esc(s.video.gallery.split("/").join(" › ")):"Not copied to the Gallery."} · ${(s.video.size/1048576).toFixed(1)} MB · ${esc((s.video.mime||s.video.ext||"").split(";")[0])}. Google Drive backups don't include videos; use Share video to put a copy on Drive.</p></section>`;
@@ -1088,6 +1160,9 @@ async function mountVideo(){const s=S.cur;if(!s.video)return;const src=await vid
   const onT=t=>{const tt=Math.max(0,t-1);const k=s.elements.findIndex(e=>tt>=e.start&&tt<e.end);const cap=$("#bpCap");if(cap)cap.textContent=k>=0?(k+1)+". "+s.elements[k].name:"";
     document.querySelectorAll(".chap").forEach((b,i)=>b.classList.toggle("on",i===k))};
   player=new VPlayer($("#bpPlayer"),s.duration,src,-(s.video.start||0)*1000,onT,null);player.stops=BP.stepMode?s.elements.slice(0,-1).map(e=>e.end):null;player.seek(0)}
+ACT.bpSnap=()=>{if(!player)return;player.pause();const root=$("#bpPlayer"),s=S.cur;const ph=snapVideo(root.querySelector("video"));if(!ph)return;snapFlash(root);
+  const tt=Math.max(0,player.t-1);let k=s.elements.findIndex(e=>tt>=e.start&&tt<e.end);if(k<0)k=tt<s.elements[0].start?0:s.elements.length-1;
+  const e=s.elements[k];e.photo=ph;e.marks=[];jbsMark();openMarkup(k)};
 ACT.bpStep=(d,el)=>{BP.stepMode=el.checked;if(player)player.stops=BP.stepMode?S.cur.elements.slice(0,-1).map(e=>e.end):null};
 ACT.bpGo=d=>{if(!player)return;const e=S.cur.elements[+d.i];player.pause();player.seek(e.start+1);player.play();window.scrollTo({top:0,behavior:"smooth"})};
 ACT.bpShare=async()=>{const v=S.cur.video;try{const r=await FS.getUri({path:v.gallery,directory:"EXTERNAL_STORAGE"});await NP.Share.share({title:S.cur.name,files:[r.uri]})}catch(e){if(!/cancel/i.test(String(e&&(e.message||e))))toast("Couldn't share the video: "+(e.message||e))}};
@@ -1263,6 +1338,7 @@ ACT.viPdf=async()=>{await jbsFlush();const b=$("#busy");b.textContent="Making PD
   try{await Promise.all([loadLib("jspdf"),loadLib("html2canvas")]);const r=await buildViPages();host=r.host;await pagesToPdf(r.pages,"VI-"+safeName(S.cur.name)+".pdf")}
   catch(e){b.hidden=true;toast("Couldn't make the PDF: "+(e.message||e))}finally{if(host)host.remove();b.hidden=true}};
 
+Object.assign(ICONS,{home:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',cloud:'<path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.2 4.5 4.5 0 0 0 7 18z"/><path d="M12 15V10M9.5 12.5 12 10l2.5 2.5"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1 7 17M17 7l2.1-2.1"/>'});
 /* ===== Users and login ===== */
 // Accounts are kept on this phone (file motionstudy/users.json in the app, localStorage in a browser).
 // Passwords are stored only as salted PBKDF2 hashes.
@@ -1279,7 +1355,77 @@ async function hashPw(pw,saltHex){const salt=saltHex?new Uint8Array(saltHex.matc
 async function checkPw(u,pw){const h=await hashPw(pw,u.salt);return h.hash===u.hash}
 const can=what=>{const r=S.user&&S.user.role;if(r==="admin")return true;if(r==="engineer")return what!=="users"&&what!=="delete";if(r==="checker")return what==="check";return false};
 const LG={err:"",busy:false};
-function vLogin(){const first=!Users.list.length;
+// New-user approval: the new phone makes a request code, the admin turns it into an approval code (works offline, no server).
+const APK="NZF-MotionStudy-approval-v1-7Qx9k2Lm";const B32="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+const b32=bytes=>{let bits=0,val=0,o="";for(const x of bytes){val=(val<<8)|x;bits+=8;while(bits>=5){o+=B32[(val>>>(bits-5))&31];bits-=5}}return o};
+const normCode=c=>String(c||"").toUpperCase().replace(/O/g,"0").replace(/[^A-Z2-9]/g,"").replace(/[IO01]/g,"");
+const fmtCode=c=>c.slice(0,4)+"-"+c.slice(4,8);
+async function approvalFor(req,role){const k=await crypto.subtle.importKey("raw",new TextEncoder().encode(APK),{name:"HMAC",hash:"SHA-256"},false,["sign"]);
+  const sig=await crypto.subtle.sign("HMAC",k,new TextEncoder().encode(normCode(req)+"|"+role));return b32(new Uint8Array(sig).slice(0,5))}
+const Pend={get(){try{return JSON.parse(localStorage.getItem("ms.pending")||"null")}catch(e){return null}},set(p){try{p?localStorage.setItem("ms.pending",JSON.stringify(p)):localStorage.removeItem("ms.pending")}catch(e){}}};
+const RQ={err:""};
+function rqErr(m){RQ.err=m;const e=$("#rqErr");if(e)e.textContent=m}
+const pwStyle='style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"';
+function reqMsg(p){return"Motion Study – access request\nName: "+p.name+"\nUser ID: "+p.uid+"\nRequest code: "+fmtCode(p.code)}
+function vRequest(){const p=Pend.get();
+  if(p)return`<section class="panel login"><div><div class="eyebrow">Waiting for approval</div><h1>Send your request</h1>
+  <p class="lead">Send this request code to the admin. The admin will send you back an approval code.</p></div>
+  <div class="code" aria-label="Request code">${fmtCode(p.code)}</div>
+  <p class="note">${esc(p.name)} · user ID <b>${esc(p.uid)}</b></p>
+  <button class="btn" data-act="rqShare">${ic("share")}Send to admin (WhatsApp, SMS…)</button>
+  <div class="field"><label class="lbl" for="rqApp">Approval code from the admin</label><input type="text" id="rqApp" class="codein" autocapitalize="characters" autocomplete="off" spellcheck="false" placeholder="XXXX-XXXX" maxlength="12"></div>
+  <p class="note" id="rqErr" style="color:var(--miss)">${esc(RQ.err)}</p>
+  <button class="btn primary big" data-act="rqEnter">${ic("check")}Enter the app</button>
+  <button class="link" data-act="rqCancel">Cancel this request</button></section>`;
+  return`<section class="panel login"><div>${Users.list.length?`<button class="link" data-act="rqBack">← Sign in</button>`:""}<div class="eyebrow">New user</div><h1>Request access</h1>
+  <p class="lead">Fill in your details. The app makes a request code; send it to the admin and enter the approval code you get back.</p></div>
+  <div class="field"><label class="lbl" for="rqName">Full name</label><input type="text" id="rqName" autocomplete="name"></div>
+  <div class="field"><label class="lbl" for="rqId">User ID you want</label><input type="text" id="rqId" autocapitalize="none" spellcheck="false" placeholder="e.g. karim.qa"></div>
+  <div class="field"><label class="lbl" for="rqPw">Password</label><input type="password" id="rqPw" autocomplete="new-password" ${pwStyle}></div>
+  <div class="field"><label class="lbl" for="rqPw2">Repeat password</label><input type="password" id="rqPw2" autocomplete="new-password" ${pwStyle}></div>
+  <p class="note" id="rqErr" style="color:var(--miss)">${esc(RQ.err)}</p>
+  <button class="btn primary big" data-act="rqMake">Make request code</button>
+  ${NATIVE&&!Users.list.length?`<button class="btn" data-act="exitAsk">Exit app</button>`:""}</section>`}
+ACT.rqStart=()=>{RQ.err="";go("request")};
+ACT.rqBack=()=>{RQ.err="";go("login")};
+ACT.rqMake=async()=>{const name=$("#rqName").value.trim(),uid=$("#rqId").value.trim().toLowerCase(),pw=$("#rqPw").value,pw2=$("#rqPw2").value;
+  if(!name||!uid)return rqErr("Enter your name and a user ID.");if(!/^[a-z0-9._-]{3,30}$/.test(uid))return rqErr("User ID: 3–30 letters, numbers, dot, dash or underscore. No spaces.");
+  if(Users.find(uid))return rqErr("That user ID is already used on this phone. Choose another.");
+  if(pw.length<6)return rqErr("Password must be at least 6 characters.");if(pw!==pw2)return rqErr("The two passwords are different.");
+  const h=await hashPw(pw);const code=b32(crypto.getRandomValues(new Uint8Array(5)));
+  Pend.set({name,uid,salt:h.salt,hash:h.hash,code,created:Date.now()});RQ.err="";render()};
+ACT.rqShare=async()=>{const p=Pend.get();if(!p)return;const text=reqMsg(p);
+  if(NATIVE&&NP.Share){try{await NP.Share.share({title:"Motion Study access request",text,dialogTitle:"Send to admin"})}catch(e){}return}
+  try{await navigator.clipboard.writeText(text);toast("Request copied. Paste it to the admin.")}catch(e){toast("Send the admin this code: "+fmtCode(p.code))}};
+ACT.rqCancel=()=>{if(!confirm("Cancel this request? You will need a new request code."))return;Pend.set(null);RQ.err="";render()};
+ACT.rqEnter=async()=>{const p=Pend.get();if(!p)return;const a=normCode($("#rqApp").value);if(a.length!==8)return rqErr("The approval code has 8 letters and numbers.");
+  let role=null;for(const r of Object.keys(ROLES))if(await approvalFor(p.code,r)===a){role=r;break}
+  if(!role)return rqErr("That approval code doesn't match this request. Check it with the admin.");
+  if(Users.find(p.uid))return rqErr("That user ID is already used on this phone.");
+  const u={id:p.uid,uid:p.uid,name:p.name,role,active:true,salt:p.salt,hash:p.hash,created:Date.now(),approved:fmtCode(p.code)};Users.list.push(u);
+  try{await Users.save()}catch(e){Users.list=Users.list.filter(x=>x!==u);return rqErr("Couldn't save the account: "+(e.message||e))}
+  Pend.set(null);RQ.err="";signIn(u,false);toast("Approved as "+ROLES[role].l+". Welcome, "+p.name+".")};
+// admin side
+const AP={req:"",role:"engineer",out:"",who:""};
+function approvalsLog(){try{return JSON.parse(localStorage.getItem("ms.approvals")||"[]")}catch(e){return[]}}
+function approvePanel(){const log=approvalsLog();
+  return`<section class="panel"><h2>Approve a new user</h2><p class="note">A new user taps <b>Request access</b> on their phone and sends you a request code. Paste their message or type the code, choose the role, and send back the approval code.</p>
+  <div class="field"><label class="lbl" for="apReq">Request code or message</label><textarea id="apReq" rows="3" data-input="apF" data-f="req" placeholder="ABCD-EFGH" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)">${esc(AP.req)}</textarea></div>
+  <div class="field"><label class="lbl" for="apRole">Role</label><select id="apRole" data-change="apRole">${Object.entries(ROLES).map(([k,v])=>`<option value="${k}"${AP.role===k?" selected":""}>${v.l}: ${v.d}</option>`).join("")}</select></div>
+  <button class="btn primary" data-act="apMake">${ic("key")}Make approval code</button>
+  ${AP.out?`<div class="code" aria-label="Approval code">${fmtCode(AP.out)}</div><p class="note">Approval code for <b>${esc(AP.who)}</b> as <b>${ROLES[AP.role].l}</b>. It only works with that request.</p><button class="btn" data-act="apShare">${ic("share")}Send approval code</button>`:""}
+  ${log.length?`<details class="more"><summary>Approved so far (${log.length})</summary><div class="tbl-wrap"><table><tbody>${log.slice(0,30).map(x=>`<tr><td>${esc(x.who)}</td><td>${ROLES[x.role]?ROLES[x.role].l:esc(x.role)}</td><td class="num">${fmtDate(x.t)}</td></tr>`).join("")}</tbody></table></div></details>`:""}</section>`}
+ACT.apF=(d,el)=>{AP[d.f]=el.value};ACT.apRole=(d,el)=>{AP.role=el.value;AP.out=""};
+ACT.apMake=async()=>{const txt=AP.req||"";const m=txt.match(/request code\W*([A-Za-z0-9]{4}\W?[A-Za-z0-9]{4})/i);const code=normCode(m?m[1]:txt);
+  if(code.length!==8){toast("A request code has 8 letters and numbers, like ABCD-EFGH.");return}
+  const nm=(txt.match(/Name:\s*(.+)/i)||[])[1],id=(txt.match(/User ID:\s*(\S+)/i)||[])[1];
+  AP.who=nm?nm.trim()+(id?" ("+id.trim()+")":""):"request "+fmtCode(code);AP.out=await approvalFor(code,AP.role);
+  const log=approvalsLog();log.unshift({who:AP.who,role:AP.role,req:fmtCode(code),t:Date.now(),by:S.user.name});try{localStorage.setItem("ms.approvals",JSON.stringify(log.slice(0,100)))}catch(e){}
+  const y=window.scrollY;render();window.scrollTo(0,y)};
+ACT.apShare=async()=>{const text="Motion Study approval for "+AP.who+" ("+ROLES[AP.role].l+")\nApproval code: "+fmtCode(AP.out);
+  if(NATIVE&&NP.Share){try{await NP.Share.share({title:"Motion Study approval",text,dialogTitle:"Send approval code"})}catch(e){}return}
+  try{await navigator.clipboard.writeText(text);toast("Approval copied")}catch(e){toast("Approval code: "+fmtCode(AP.out))}};
+function vLogin(){if(!Users.list.length||Pend.get())return vRequest();const first=false;
   return`<section class="panel login"><div><div class="eyebrow">${first?"First start":"Sign in"}</div><h1>${first?"Create the admin account":"Motion Study"}</h1>
   <p class="lead">${first?"This account manages users on this phone. Choose a password you will remember; it cannot be recovered.":"Enter your user ID and password."}</p></div>
   ${first?`<div class="field"><label class="lbl" for="lgName">Full name</label><input type="text" id="lgName" autocomplete="name"></div>`:""}
@@ -1289,6 +1435,7 @@ function vLogin(){const first=!Users.list.length;
    :`<label class="check"><input type="checkbox" id="lgStay"> Stay signed in on this phone</label>`}
   <p class="note" id="lgErr" style="color:var(--miss)">${esc(LG.err)}</p>
   <button class="btn primary big" data-act="${first?"createAdmin":"login"}">${first?"Create account":"Sign in"}</button>
+  <div class="row between"><span class="note">New user?</span><button class="btn sm" data-act="rqStart">Request access</button></div>
   ${NATIVE?`<button class="btn" data-act="exitAsk">Exit app</button>`:""}</section>`}
 function lgErr(m){LG.err=m;const e=$("#lgErr");if(e)e.textContent=m}
 ACT.createAdmin=async()=>{const name=$("#lgName").value.trim(),uid=$("#lgId").value.trim().toLowerCase(),pw=$("#lgPw").value,pw2=$("#lgPw2").value;
@@ -1300,12 +1447,14 @@ ACT.createAdmin=async()=>{const name=$("#lgName").value.trim(),uid=$("#lgId").va
 ACT.login=async()=>{const uid=$("#lgId").value,pw=$("#lgPw").value,stay=$("#lgStay").checked;const u=Users.find(uid);
   if(!u||!(await checkPw(u,pw)))return lgErr("User ID or password is wrong.");if(u.active===false)return lgErr("This account is switched off. Ask the admin.");
   signIn(u,stay)};
-function signIn(u,stay){S.user={id:u.id,name:u.name,role:u.role};LG.err="";try{stay?localStorage.setItem("ms.session",u.id):localStorage.removeItem("ms.session")}catch(e){}renderUserbar();go("library")}
+function signIn(u,stay){S.user={id:u.id,name:u.name,role:u.role};LG.err="";try{stay?localStorage.setItem("ms.session",u.id):localStorage.removeItem("ms.session")}catch(e){}renderUserbar();go("home")}
 ACT.logout=async()=>{closeMenu();if(S.view==="jbs"||S.view==="vi")await jbsFlush();if(S.view==="record")stopRecordView();S.user=null;try{localStorage.removeItem("ms.session")}catch(e){}renderUserbar();S.view="login";render()};
 function renderUserbar(){const b=$("#userbar");if(!b)return;b.innerHTML=S.user?`<button class="uchip" data-act="openMenu" aria-haspopup="menu"><span>${esc(S.user.name)}</span> <i>${ROLES[S.user.role].l}</i> ☰</button>`:""}
 ACT.openMenu=()=>{const m=$("#menu");m.innerHTML=`<div class="box" role="menu"><div class="who">Signed in as <b>${esc(S.user.name)}</b> (${ROLES[S.user.role].l})</div>
+  <button role="menuitem" data-act="menuGo" data-v="home">${ic("home")}Home</button>
   <button role="menuitem" data-act="menuGo" data-v="library">${ic("list")}Standards</button>
-  ${can("users")?`<button role="menuitem" data-act="menuGo" data-v="users">${ic("users")}Users</button>`:""}
+  ${can("users")?`<button role="menuitem" data-act="menuGo" data-v="users">${ic("users")}Users &amp; approvals</button>`:""}
+  <button role="menuitem" data-act="menuGo" data-v="settings">${ic("gear")}Settings &amp; backup</button>
   <button role="menuitem" data-act="menuGo" data-v="password">${ic("key")}Change password</button>
   <button role="menuitem" data-act="logout">${ic("out")}Log out</button>
   ${NATIVE?`<button role="menuitem" data-act="exitAsk" style="color:var(--miss)">${ic("power")}Exit app</button>`:""}</div>`;m.hidden=false};
@@ -1321,8 +1470,9 @@ ACT.exitApp=async()=>{closeModal();try{if(S.view==="jbs"||S.view==="vi")await jb
 // Users screen (admin)
 const UF={id:"",name:"",uid:"",role:"engineer",pw:""};
 function vUsers(){if(!can("users"))return`<p class="note">Only the admin can manage users.</p>`;
-  return`<div class="row"><button class="link" data-act="home">← Standards</button></div><div><h1>Users</h1><p class="lead">People who can sign in on this phone. Give each person their own user ID so the app records who made each standard and check.</p></div>
-  <section class="panel"><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>User ID</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>
+  return`<div class="row"><button class="link" data-act="home">← Home</button></div><div><h1>Users</h1><p class="lead">People who can sign in on this phone. Give each person their own user ID so the app records who made each standard and check.</p></div>
+  ${approvePanel()}
+  <section class="panel"><h2>Users on this phone</h2><div class="tbl-wrap"><table><thead><tr><th>Name</th><th>User ID</th><th>Role</th><th>Status</th><th></th></tr></thead><tbody>
   ${Users.list.map(u=>`<tr><td>${esc(u.name)}</td><td class="num">${esc(u.uid)}</td><td><span class="role ${u.role==="admin"?"admin":""}">${ROLES[u.role].l}</span></td><td>${u.active===false?"Off":"Active"}</td>
    <td><div class="row"><button class="link" data-act="uEdit" data-id="${esc(u.id)}">Edit</button>${u.id!==S.user.id?`<button class="link" data-act="uToggle" data-id="${esc(u.id)}">${u.active===false?"Switch on":"Switch off"}</button>`:""}</div></td></tr>`).join("")}
   </tbody></table></div></section>
@@ -1349,27 +1499,30 @@ ACT.uSave=async()=>{const name=UF.name.trim(),uid=UF.uid.trim().toLowerCase();
     Users.list.push({id:uid,uid,name,role:UF.role,active:true,salt:h.salt,hash:h.hash,created:Date.now()})}
   try{await Users.save()}catch(e){return toast("Couldn't save: "+(e.message||e))}toast(UF.id?"Saved":"User added");ACT.uClear()};
 // Change own password
-function vPassword(){return`<div class="row"><button class="link" data-act="home">← Standards</button></div><section class="panel login"><h1>Change password</h1>
+function vPassword(){return`<div class="row"><button class="link" data-act="home">← Home</button></div><section class="panel login"><h1>Change password</h1>
   <div class="field"><label class="lbl" for="cpOld">Current password</label><input type="password" id="cpOld" autocomplete="current-password" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>
   <div class="field"><label class="lbl" for="cpNew">New password</label><input type="password" id="cpNew" autocomplete="new-password" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>
   <div class="field"><label class="lbl" for="cpNew2">Repeat new password</label><input type="password" id="cpNew2" autocomplete="new-password" style="width:100%;min-height:44px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2)"></div>
   <button class="btn primary big" data-act="cpSave">Change password</button></section>`}
 ACT.cpSave=async()=>{const u=Users.list.find(x=>x.id===S.user.id);const o=$("#cpOld").value,n=$("#cpNew").value,n2=$("#cpNew2").value;
   if(!u||!(await checkPw(u,o)))return toast("The current password is wrong.");if(n.length<6)return toast("New password must be at least 6 characters.");if(n!==n2)return toast("The new passwords are different.");
-  const h=await hashPw(n);u.salt=h.salt;u.hash=h.hash;await Users.save();toast("Password changed");go("library")};
+  const h=await hashPw(n);u.salt=h.salt;u.hash=h.hash;await Users.save();toast("Password changed");go("home")};
 // Android back button
 function backTarget(){const v=S.view;
-  if(v==="std"||v==="users"||v==="password")return"library";
+  if(v==="std")return"library";
+  if(v==="library"||v==="users"||v==="password"||v==="settings")return"home";
+  if(v==="request")return"login";
   if(v==="jbs"||v==="vi"||v==="video"||v==="review"||v==="result")return"std";
-  if(v==="record")return R.mode==="attempt"?"std":"library";
-  if(v==="edit")return E.base?"std":"library";
+  if(v==="record")return R.mode==="attempt"?"std":"home";
+  if(v==="edit")return E.base?"std":"home";
   return null}
 function onBack(){if(!$("#modal").hidden){closeModal();if(S.view==="vi"||S.view==="jbs"){const y=window.scrollY;render();window.scrollTo(0,y)}return}if(!$("#menu").hidden){closeMenu();return}
-  if(!S.user||S.view==="library"||S.view==="login"){ACT.exitAsk();return}
+  if(S.view==="request"){go("login");return}
+  if(!S.user||S.view==="home"||S.view==="login"){ACT.exitAsk();return}
   const t=backTarget();if(t)go(t);else ACT.exitAsk()}
 
 /* ===== Boot ===== */
-if(location.search.indexOf("mstest")>=0)window.__ms={S,E,R,go,render,Store,ACT,startVideoRec,stopVideoRec,openCam,get player(){return player}};
+if(location.search.indexOf("mstest")>=0)window.__ms={approvalFor,Pend,Users,S,E,R,go,render,Store,ACT,startVideoRec,stopVideoRec,openCam,get player(){return player}};
 (async()=>{
   app.innerHTML=`<section class="panel"><p class="note">Loading…</p></section>`;
   await Store.open();await Store.migrate();
@@ -1379,7 +1532,7 @@ if(location.search.indexOf("mstest")>=0)window.__ms={S,E,R,go,render,Store,ACT,s
   let sid=null;try{sid=localStorage.getItem("ms.session")}catch(e){}
   const su=sid&&Users.list.find(u=>u.id===sid&&u.active!==false);
   if(su)S.user={id:su.id,name:su.name,role:su.role};
-  S.view=S.user?"library":"login";renderUserbar();
+  S.view=S.user?"home":"login";renderUserbar();
   if(NATIVE&&NP.App&&NP.App.addListener)try{NP.App.addListener("backButton",onBack)}catch(e){}
   await loadStds();render();
   Pose.load().catch(()=>{});
